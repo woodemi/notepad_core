@@ -67,6 +67,11 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   image:
     dependency: transitive
     description:
@@ -88,6 +93,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.8"
+  notepad_core_web:
+    dependency: "direct main"
+    description:
+      path: "../notepad_core_web"
+      relative: true
+    source: path
+    version: "0.0.1"
   path:
     dependency: transitive
     description:
