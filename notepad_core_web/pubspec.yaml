@@ -1,4 +1,4 @@
-name: notepad_core
+name: notepad_core_web
 description: A new flutter plugin project.
 version: 0.0.1
 author:
@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  notepad_core_web:
-    path: ../notepad_core_web
+  flutter_web_plugins:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -28,13 +28,9 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     platforms:
-      android:
-        package: com.example.notepad_core
-        pluginClass: NotepadCorePlugin
-      ios:
-        pluginClass: NotepadCorePlugin
       web:
-        default_package: notepad_core_web
+        pluginClass: NotepadCorePlugin
+        fileName: notepad_core_web.dart
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
