@@ -1,0 +1,27 @@
+name: Main
+
+on: push
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+      - run: cd notepad_core_example && flutter build apk
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+      - run: cd notepad_core_example && flutter build ios --no-codesign
+  
+  build-web:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'beta'
+      - run: flutter config --enable-web; cd notepad_core_example; flutter build web
