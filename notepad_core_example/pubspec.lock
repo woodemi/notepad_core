@@ -107,6 +107,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  notepad_core_platform_interface:
+    dependency: transitive
+    description:
+      path: "../notepad_core_platform_interface"
+      relative: true
+    source: path
+    version: "0.0.1"
   notepad_core_web:
     dependency: transitive
     description:
@@ -135,6 +142,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.4.0"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.1"
   quiver:
     dependency: transitive
     description:

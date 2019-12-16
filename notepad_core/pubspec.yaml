@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  notepad_core_platform_interface:
+    path: ../notepad_core_platform_interface
   notepad_core_web:
     path: ../notepad_core_web
 

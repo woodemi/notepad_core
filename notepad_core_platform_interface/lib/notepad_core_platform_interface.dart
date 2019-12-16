@@ -17,4 +17,10 @@ abstract class NotepadCorePlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
+
+  Future<dynamic> requestDevice();
+
+  void startScan();
+
+  void stopScan();
 }
