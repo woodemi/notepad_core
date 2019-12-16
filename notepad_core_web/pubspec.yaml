@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
+  notepad_core_platform_interface:
+    path: ../notepad_core_platform_interface
 
 dev_dependencies:
   flutter_test:
