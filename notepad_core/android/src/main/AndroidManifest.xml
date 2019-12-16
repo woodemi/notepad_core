@@ -1,3 +1,2 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.example.notepad_core">
+<manifest package="io.woodemi.notepad_core">
 </manifest>

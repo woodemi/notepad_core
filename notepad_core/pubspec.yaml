@@ -29,7 +29,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.notepad_core
+        package: io.woodemi.notepad_core
         pluginClass: NotepadCorePlugin
       ios:
         pluginClass: NotepadCorePlugin
