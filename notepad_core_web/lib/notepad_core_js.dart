@@ -20,15 +20,25 @@ class ScanOptions {
 
 @JS()
 class BluetoothDevice {
+  static final String disconnectEvent = 'gattserverdisconnected';
+  
   external String get id;
 
   external String get name;
 
   external BluetoothRemoteGATTServer get gatt;
+
+  external void addEventListener(String type, listener(dynamic event), [bool useCapture]);
+
+  external void removeEventListener(String type, listener(dynamic event), [bool useCapture]);
 }
 
 @JS()
 class BluetoothRemoteGATTServer {
+  external BluetoothDevice get device;
+
+  external bool get connected;
+
   external dynamic connect();
 
   external void disconnect();

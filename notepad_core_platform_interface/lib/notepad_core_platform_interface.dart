@@ -4,6 +4,12 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'method_channel_notepad_core.dart';
 
+typedef MessageHandler = Future<dynamic> Function(NotepadCoreMessage message);
+
+class NotepadCoreMessage {
+  NotepadCoreMessage._();
+}
+
 abstract class NotepadCorePlatform extends PlatformInterface {
   NotepadCorePlatform() : super(token: _token);
 
@@ -29,4 +35,16 @@ abstract class NotepadCorePlatform extends PlatformInterface {
   void connect(scanResult);
 
   void disconnect();
+
+  MessageHandler messageHandler;
+}
+
+class ConnectionState extends NotepadCoreMessage {
+  static final disconnected = ConnectionState._('disconnected');
+  static final connecting = ConnectionState._('connecting');
+  static final connected = ConnectionState._('connected');
+
+  final String value;
+
+  ConnectionState._(this.value) : super._();
 }
