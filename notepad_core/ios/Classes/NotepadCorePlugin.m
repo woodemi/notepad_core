@@ -5,6 +5,9 @@
 
 @interface NotepadCorePlugin () <CBCentralManagerDelegate, FlutterStreamHandler>
 @property(nonatomic, strong) CBCentralManager *manager;
+@property(nonatomic, strong) NSMutableDictionary<NSString *, CBPeripheral *> *discoveredPeripherals;
+@property(nonatomic, strong) CBPeripheral *peripheral;
+
 @property(nonatomic, strong) FlutterEventSink scanResultSink;
 
 @end
@@ -17,6 +20,7 @@
 - (instancetype)initWithRegistrar:(NSObject <FlutterPluginRegistrar> *)registrar {
     if (self = [super init]) {
         _manager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+        _discoveredPeripherals = [[NSMutableDictionary alloc] init];
 
         FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"notepad_core/method" binaryMessenger:[registrar messenger]];
         [registrar addMethodCallDelegate:self channel:methodChannel];
@@ -35,6 +39,15 @@
     } else if ([call.method isEqualToString:@"stopScan"]) {
         [_manager stopScan];
         result(nil);
+    } else if ([call.method isEqualToString:@"connect"]) {
+        NSString *deviceId = call.arguments[@"deviceId"];
+        _peripheral = _discoveredPeripherals[deviceId];
+        [_manager connectPeripheral:_peripheral options:nil];
+        result(nil);
+    } else if ([call.method isEqualToString:@"disconnect"]) {
+        [_manager cancelPeripheralConnection:_peripheral];
+        _peripheral = nil;
+        result(nil);
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -48,6 +61,8 @@
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *, id> *)advertisementData RSSI:(NSNumber *)RSSI {
     NSLog(@"centralManager:didDiscoverPeripheral %@ %@", peripheral.name, peripheral.identifier);
+    [_discoveredPeripherals setValue:peripheral forKey:peripheral.identifier.UUIDString];
+
     NSData *manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey];
     if (_scanResultSink)
         _scanResultSink(@{
@@ -56,6 +71,11 @@
                 @"manufacturerData": [FlutterStandardTypedData typedDataWithBytes:(manufacturerData ? manufacturerData : [NSData new])],
                 @"rssi": RSSI,
         });
+}
+
+- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
+    if (peripheral != _peripheral) NSLog(@"Probably MEMORY LEAK!");
+    NSLog(@"centralManager:didConnect %@", peripheral.identifier);
 }
 
 # pragma FlutterStreamHandler
