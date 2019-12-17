@@ -30,11 +30,15 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
 
   @override
   void connect(scanResult) {
-    // TODO: implement connect
+    _method.invokeMethod('connect', {
+      'deviceId': scanResult.deviceId,
+    }).then((_) => print('connect invokeMethod success'));
   }
 
   @override
   void disconnect() {
-    // TODO: implement disconnect
+    _method.invokeMethod('disconnect').then((_) {
+      print('disconnect invokeMethod success');
+    });
   }
 }
