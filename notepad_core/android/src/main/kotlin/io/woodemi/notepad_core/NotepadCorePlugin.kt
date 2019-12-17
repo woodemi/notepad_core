@@ -8,16 +8,19 @@ import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 private const val TAG = "NotepadCorePlugin"
 
 /** NotepadCorePlugin */
-class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler {
+class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         NotepadCorePlugin(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
@@ -45,6 +48,7 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler {
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
+        EventChannel(messenger, "notepad_core/event.scanResult").setStreamHandler(this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -71,10 +75,43 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler {
 
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             Log.v(TAG, "onScanResult: $callbackType + $result")
+            scanResultSink?.success(mapOf<String, Any>(
+                    "name" to (result.device.name ?: ""),
+                    "deviceId" to result.device.address,
+                    "manufacturerData" to (result.manufacturerData ?: byteArrayOf()),
+                    "rssi" to result.rssi
+            ))
         }
 
         override fun onBatchScanResults(results: MutableList<ScanResult>?) {
             Log.v(TAG, "onBatchScanResults: $results")
         }
     }
+
+    private var scanResultSink: EventChannel.EventSink? = null
+
+    override fun onListen(args: Any?, eventSink: EventChannel.EventSink?) {
+        val map = args as? Map<String, Any> ?: return
+        when (map["name"]) {
+            "scanResult" -> scanResultSink = eventSink
+        }
+    }
+
+    override fun onCancel(args: Any?) {
+        val map = args as? Map<String, Any> ?: return
+        when (map["name"]) {
+            "scanResult" -> scanResultSink = null
+        }
+    }
 }
+
+val ScanResult.manufacturerData: ByteArray?
+    get() {
+        val sparseArray = scanRecord?.manufacturerSpecificData ?: return null
+        if (sparseArray.size() == 0) return null
+
+        return sparseArray.keyAt(0).toShort().toByteArray() + sparseArray.valueAt(0)
+    }
+
+fun Short.toByteArray(byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN): ByteArray =
+        ByteBuffer.allocate(2 /*Short.SIZE_BYTES*/).order(byteOrder).putShort(this).array()
