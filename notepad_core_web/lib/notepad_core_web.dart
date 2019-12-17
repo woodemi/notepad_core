@@ -32,13 +32,23 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     throw UnimplementedError('Not implemented in NotepadCorePlugin');
   }
 
+  BluetoothRemoteGATTServer _connectGatt;
+
   @override
   void connect(scanResult) {
-    // TODO: implement connect
+    var connect = (scanResult as BluetoothDevice).gatt.connect();
+    promiseToFuture(connect).then((gatt) {
+      print('onConnectSuccess $gatt');
+      _connectGatt = gatt;
+    }, onError: (error) {
+      print('onConnectFail $error');
+      _connectGatt = null;
+    });
   }
 
   @override
   void disconnect() {
-    // TODO: implement disconnect
+    _connectGatt?.disconnect();
+    _connectGatt = null;
   }
 }

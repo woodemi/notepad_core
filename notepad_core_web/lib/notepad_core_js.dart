@@ -17,3 +17,19 @@ class ScanOptions {
     bool acceptAllDevices,
   });
 }
+
+@JS()
+class BluetoothDevice {
+  external String get id;
+
+  external String get name;
+
+  external BluetoothRemoteGATTServer get gatt;
+}
+
+@JS()
+class BluetoothRemoteGATTServer {
+  external dynamic connect();
+
+  external void disconnect();
+}
