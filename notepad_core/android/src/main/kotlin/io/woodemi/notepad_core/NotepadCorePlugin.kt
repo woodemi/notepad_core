@@ -1,18 +1,25 @@
 package io.woodemi.notepad_core
 
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.content.Context
+import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
+private const val TAG = "NotepadCorePlugin"
+
 /** NotepadCorePlugin */
-class NotepadCorePlugin : FlutterPlugin, MethodCallHandler {
+class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "notepad_core")
-        channel.setMethodCallHandler(NotepadCorePlugin())
+        NotepadCorePlugin(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -27,19 +34,47 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler {
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "notepad_core")
-            channel.setMethodCallHandler(NotepadCorePlugin())
+            NotepadCorePlugin(registrar.context(), registrar.messenger())
         }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     }
 
+    constructor(context: Context, messenger: BinaryMessenger) : this() {
+        bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+
+        MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
+    }
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        if (call.method == "getPlatformVersion") {
-            result.success("Android ${android.os.Build.VERSION.RELEASE}")
-        } else {
-            result.notImplemented()
+        Log.d(TAG, "onMethodCall " + call.method)
+        when (call.method) {
+            "startScan" -> {
+                bluetoothManager.adapter.bluetoothLeScanner?.startScan(scanCallback)
+                result.success(null)
+            }
+            "stopScan" -> {
+                bluetoothManager.adapter.bluetoothLeScanner?.stopScan(scanCallback)
+                result.success(null)
+            }
+            else -> result.notImplemented()
+        }
+    }
+
+    private lateinit var bluetoothManager: BluetoothManager
+
+    private val scanCallback = object : ScanCallback() {
+        override fun onScanFailed(errorCode: Int) {
+            Log.v(TAG, "onScanFailed: $errorCode")
+        }
+
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            Log.v(TAG, "onScanResult: $callbackType + $result")
+        }
+
+        override fun onBatchScanResults(results: MutableList<ScanResult>?) {
+            Log.v(TAG, "onBatchScanResults: $results")
         }
     }
 }
