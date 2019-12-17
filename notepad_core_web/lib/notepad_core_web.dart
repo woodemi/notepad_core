@@ -31,4 +31,14 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   Stream<dynamic> get scanResultStream {
     throw UnimplementedError('Not implemented in NotepadCorePlugin');
   }
+
+  @override
+  void connect(scanResult) {
+    // TODO: implement connect
+  }
+
+  @override
+  void disconnect() {
+    // TODO: implement disconnect
+  }
 }

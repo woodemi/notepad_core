@@ -27,4 +27,14 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   @override
   Stream<dynamic> get scanResultStream =>
     _event_scanResult.receiveBroadcastStream({'name': 'scanResult'});
+
+  @override
+  void connect(scanResult) {
+    // TODO: implement connect
+  }
+
+  @override
+  void disconnect() {
+    // TODO: implement disconnect
+  }
 }
