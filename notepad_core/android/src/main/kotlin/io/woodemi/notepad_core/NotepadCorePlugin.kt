@@ -1,5 +1,7 @@
 package io.woodemi.notepad_core
 
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -44,7 +46,10 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     }
 
+    private lateinit var context: Context
+
     constructor(context: Context, messenger: BinaryMessenger) : this() {
+        this.context = context
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
@@ -60,6 +65,18 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
             }
             "stopScan" -> {
                 bluetoothManager.adapter.bluetoothLeScanner?.stopScan(scanCallback)
+                result.success(null)
+            }
+            "connect" -> {
+                connectGatt = bluetoothManager.adapter
+                        .getRemoteDevice(call.argument<String>("deviceId"))
+                        .connectGatt(context, false, gattCallback)
+                result.success(null)
+            }
+            "disconnect" -> {
+                connectGatt?.disconnect()
+                connectGatt?.close()
+                connectGatt = null
                 result.success(null)
             }
             else -> result.notImplemented()
@@ -101,6 +118,15 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
         val map = args as? Map<String, Any> ?: return
         when (map["name"]) {
             "scanResult" -> scanResultSink = null
+        }
+    }
+
+    private var connectGatt: BluetoothGatt? = null
+
+    private val gattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            if (gatt != connectGatt) Log.e(TAG, "Probably MEMORY LEAK!")
+            Log.v(TAG, "onConnectionStateChange: status($status), newState($newState)")
         }
     }
 }
