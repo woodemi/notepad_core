@@ -25,4 +25,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
   void stopScan();
 
   Stream<dynamic> get scanResultStream;
+
+  void connect(scanResult);
+
+  void disconnect();
 }

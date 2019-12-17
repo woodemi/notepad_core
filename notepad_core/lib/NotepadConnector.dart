@@ -33,4 +33,12 @@ class NotepadConnector {
       .map((item) => NotepadScanResult.fromMap(item))
       .where(support);
   }
+
+  void connect(scanResult) {
+    NotepadCorePlatform.instance.connect(scanResult);
+  }
+
+  void disconnect() {
+    NotepadCorePlatform.instance.disconnect();
+  }
 }
