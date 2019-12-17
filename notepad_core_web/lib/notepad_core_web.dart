@@ -26,4 +26,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   void stopScan() {
     throw UnimplementedError('Not implemented in NotepadCorePlugin');
   }
+
+  @override
+  Stream<dynamic> get scanResultStream {
+    throw UnimplementedError('Not implemented in NotepadCorePlugin');
+  }
 }
