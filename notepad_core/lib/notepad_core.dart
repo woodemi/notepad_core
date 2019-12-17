@@ -1,13 +1,28 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
-class NotepadCore {
-  static const MethodChannel _channel =
-      const MethodChannel('notepad_core');
+final notepadConnector = NotepadConnector._();
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+class NotepadConnector {
+  NotepadConnector._();
+
+  Future<dynamic> requestDevice() {
+    if (!kIsWeb) throw UnimplementedError('Web platform only for now');
+
+    return NotepadCorePlatform.instance.requestDevice();
+  }
+
+  void startScan() {
+    if (kIsWeb) throw UnimplementedError('Native platform only for now');
+
+    NotepadCorePlatform.instance.startScan();
+  }
+
+  void stopScan() {
+    if (kIsWeb) throw UnimplementedError('Native platform only for now');
+
+    NotepadCorePlatform.instance.stopScan();
   }
 }

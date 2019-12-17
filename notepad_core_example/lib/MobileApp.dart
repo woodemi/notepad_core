@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:notepad_core/notepad_core.dart';
 
 class MobileApp extends StatelessWidget {
   @override
@@ -37,13 +37,13 @@ class _MobileHomePageState extends State<_MobileHomePage> {
         RaisedButton(
           child: Text('startScan'),
           onPressed: () {
-            NotepadCorePlatform.instance.startScan();
+            notepadConnector.startScan();
           },
         ),
         RaisedButton(
           child: Text('stopScan'),
           onPressed: () {
-            NotepadCorePlatform.instance.stopScan();
+            notepadConnector.stopScan();
           },
         ),
       ],

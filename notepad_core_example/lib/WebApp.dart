@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:notepad_core/notepad_core.dart';
 
 class WebApp extends StatelessWidget {
   @override
@@ -27,7 +27,7 @@ class _WebHomePageState extends State<_WebHomePage> {
           RaisedButton(
             child: Text('requestDevice'),
             onPressed: () async {
-              var device = await NotepadCorePlatform.instance.requestDevice();
+              var device = await notepadConnector.requestDevice();
               print('requestDevice $device');
             },
           ),
