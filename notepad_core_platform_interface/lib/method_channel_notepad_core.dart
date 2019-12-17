@@ -1,4 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+
+const _method = const MethodChannel('notepad_core/method');
 
 class MethodChannelNotepadCore extends NotepadCorePlatform {
   @override
@@ -8,11 +11,15 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
 
   @override
   void startScan() {
-    // TODO: implement startScan
+    _method
+        .invokeMethod('startScan')
+        .then((_) => print('startScan invokeMethod success'));
   }
 
   @override
   void stopScan() {
-    // TODO: implement stopScan
+    _method
+        .invokeMethod('stopScan')
+        .then((_) => print('stopScan invokeMethod success'));
   }
 }
