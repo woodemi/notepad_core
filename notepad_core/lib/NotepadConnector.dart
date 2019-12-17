@@ -5,8 +5,12 @@ import 'Notepad.dart';
 
 final notepadConnector = NotepadConnector._();
 
+final _tag = 'NotepadConnector';
+
 class NotepadConnector {
-  NotepadConnector._();
+  NotepadConnector._() {
+    NotepadCorePlatform.instance.messageHandler = _handleMessage;
+  }
 
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
@@ -40,5 +44,12 @@ class NotepadConnector {
 
   void disconnect() {
     NotepadCorePlatform.instance.disconnect();
+  }
+
+  Future<void> _handleMessage(NotepadCoreMessage message) async {
+    print('$_tag handleMessage $message');
+    if (message is ConnectionState) {
+      print('ConnectionState ${message.value}');
+    }
   }
 }
