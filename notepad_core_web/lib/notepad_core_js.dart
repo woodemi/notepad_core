@@ -1,6 +1,8 @@
 @JS()
 library notepad_core_js;
 
+import 'dart:html';
+
 import 'package:js/js.dart';
 
 @JS('navigator.bluetooth')
@@ -19,18 +21,15 @@ class ScanOptions {
 }
 
 @JS()
-class BluetoothDevice {
-  static final String disconnectEvent = 'gattserverdisconnected';
-  
+mixin BluetoothDevice implements EventTarget {
+  /// Event type should be [const]
+  static const String disconnectEvent = 'gattserverdisconnected';
+
   external String get id;
 
   external String get name;
 
   external BluetoothRemoteGATTServer get gatt;
-
-  external void addEventListener(String type, listener(dynamic event), [bool useCapture]);
-
-  external void removeEventListener(String type, listener(dynamic event), [bool useCapture]);
 }
 
 @JS()
