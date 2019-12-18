@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js_util.dart' show promiseToFuture, getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
@@ -32,42 +34,42 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     throw UnimplementedError('Not implemented in NotepadCorePlugin');
   }
 
-  BluetoothDevice _bluetoothDevice;
+  BluetoothRemoteGATTServer _connectGatt;
 
   @override
   void connect(scanResult) {
-    if (messageHandler != null) messageHandler(ConnectionState.connecting);
-
     final connect = (scanResult as BluetoothDevice).gatt.connect();
     promiseToFuture(connect).then((result) {
-      var gatt = (result as BluetoothRemoteGATTServer);
-      print('onConnectSuccess $gatt, ${gatt.connected}');
-      _bluetoothDevice = gatt.device;
-      _bluetoothDevice.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+      _connectGatt = (result as BluetoothRemoteGATTServer);
+      print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
+      _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
 
       if (messageHandler != null) messageHandler(ConnectionState.connected);
     }, onError: (error) {
       print('onConnectFail $error');
-      _bluetoothDevice?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
-      _bluetoothDevice = null;
-
       if (messageHandler != null) messageHandler(ConnectionState.disconnected);
     });
+
+    if (messageHandler != null) messageHandler(ConnectionState.connecting);
   }
 
   @override
   void disconnect() {
-    _bluetoothDevice?.gatt?.disconnect();
-    _bluetoothDevice?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
-    _bluetoothDevice = null;
+    _connectGatt?.disconnect();
+    _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+    _connectGatt = null;
   }
 
-  void _handleDisconnectEvent(dynamic event) {
-    print('_handleBluetoothDeviceEvent $event');
-    if (getProperty(event, 'target') != _bluetoothDevice) {
+  /// FIXME [removeEventListener] not work
+  void _handleDisconnectEvent(Event event) {
+    print('_handleDisconnectEvent ${event.target.hashCode}');
+    if (event.target != _connectGatt?.device) {
       print('Probably MEMORY LEAK!');
       return;
     }
+
+    _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+    _connectGatt = null;
  
     if (messageHandler != null) messageHandler(ConnectionState.disconnected);
   }
