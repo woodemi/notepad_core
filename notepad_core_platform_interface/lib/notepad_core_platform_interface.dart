@@ -7,7 +7,7 @@ import 'method_channel_notepad_core.dart';
 typedef MessageHandler = Future<dynamic> Function(NotepadCoreMessage message);
 
 class NotepadCoreMessage {
-  NotepadCoreMessage._();
+  const NotepadCoreMessage._();
 }
 
 abstract class NotepadCorePlatform extends PlatformInterface {
@@ -40,11 +40,22 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 }
 
 class ConnectionState extends NotepadCoreMessage {
-  static final disconnected = ConnectionState._('disconnected');
-  static final connecting = ConnectionState._('connecting');
-  static final connected = ConnectionState._('connected');
+  static const disconnected = ConnectionState._('disconnected');
+  static const connecting = ConnectionState._('connecting');
+  static const connected = ConnectionState._('connected');
 
   final String value;
 
-  ConnectionState._(this.value) : super._();
+  const ConnectionState._(this.value) : super._();
+
+  static ConnectionState parse(String value) {
+    if (value == disconnected.value) {
+      return disconnected;
+    } else if (value == connecting.value) {
+      return connecting;
+    } else if (value == connected.value) {
+      return connected;
+    }
+    throw ArgumentError.value(value);
+  }
 }
