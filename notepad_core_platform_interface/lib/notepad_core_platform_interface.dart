@@ -1,5 +1,6 @@
 library notepad_core_platform_interface;
 
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -57,6 +58,10 @@ abstract class NotepadCorePlatform extends PlatformInterface {
   Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic);
 
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value);
+
+  // FIXME Close
+  final _characteristicValueController = StreamController<Tuple2<String, Uint8List>>.broadcast();
+  Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
 }
 
 class ConnectionState extends NotepadCoreMessage {

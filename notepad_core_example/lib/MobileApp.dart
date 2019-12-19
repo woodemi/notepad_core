@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:notepad_core/Notepad.dart';
 import 'package:notepad_core/notepad_core.dart';
 
 import 'NotepadDetailPage.dart';

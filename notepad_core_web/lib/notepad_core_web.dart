@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
@@ -92,10 +93,15 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     await characteristic.writeValue(value);
   }
 
+  // FIXME Close
+  final _characteristicValueController = StreamController<Tuple2<String, Uint8List>>.broadcast();
+
+  @override
+  Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
+
   void _onCharacteristicValueChange(Event event) {
     var characteristic = BluetoothRemoteGATTCharacteristic(event.target);
-    var bytes = characteristic.value;
-    print('_onCharacteristicValueChange ${characteristic.uuid} ${hex.encode(bytes)}');
+    _characteristicValueController.add(Tuple2(characteristic.uuid, characteristic.value));
   }
 }
 
