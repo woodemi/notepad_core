@@ -6,6 +6,12 @@ import 'package:convert/convert.dart';
 
 import 'Notepad.dart';
 
+const SUFFIX = 'ba5e-f4ee-5ca1-eb1e5e4b1ce0';
+
+const SERV__COMMAND = '57444d01-$SUFFIX';
+const CHAR__COMMAND_REQUEST = '57444e02-$SUFFIX';
+const CHAR__COMMAND_RESPONSE = CHAR__COMMAND_REQUEST;
+
 final notepadConnector = NotepadConnector._();
 
 final _tag = 'NotepadConnector';
@@ -18,7 +24,7 @@ class NotepadConnector {
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
 
-    return NotepadCorePlatform.instance.requestDevice();
+    return NotepadCorePlatform.instance.requestDevice(optionalServices: [SERV__COMMAND]);
   }
 
   void startScan() {
@@ -63,7 +69,7 @@ class NotepadConnector {
   }
 
   Future<dynamic> completeConnection() async {
-    await sendRequestAsync('Command', Tuple2('57444d01-ba5e-f4ee-5ca1-eb1e5e4b1ce0', '57444e02-ba5e-f4ee-5ca1-eb1e5e4b1ce0'), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x00]));
+    await sendRequestAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
   }
 
   Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {

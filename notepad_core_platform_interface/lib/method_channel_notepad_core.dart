@@ -13,7 +13,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
-  Future<dynamic> requestDevice() {
+  Future<dynamic> requestDevice({
+    List<String> optionalServices,
+  }) {
     throw UnimplementedError('Not implemented in MethodChannelNotepadCore');
   }
 
