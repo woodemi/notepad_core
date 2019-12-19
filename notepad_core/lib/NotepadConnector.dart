@@ -4,17 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 import 'package:convert/convert.dart';
 
+import 'models.dart';
 import 'Notepad.dart';
+import 'NotepadClient.dart';
 
 const GSS_SUFFIX = '0000-1000-8000-00805f9b34fb';
-
-const SUFFIX = 'ba5e-f4ee-5ca1-eb1e5e4b1ce0';
-
-const SERV__COMMAND = '57444d01-$SUFFIX';
-const CHAR__COMMAND_REQUEST = '57444e02-$SUFFIX';
-const CHAR__COMMAND_RESPONSE = CHAR__COMMAND_REQUEST;
-
-typedef Predicate = bool Function(Uint8List data);
 
 final notepadConnector = NotepadConnector._();
 
@@ -28,7 +22,7 @@ class NotepadConnector {
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
 
-    return NotepadCorePlatform.instance.requestDevice(optionalServices: [SERV__COMMAND]);
+    return NotepadCorePlatform.instance.requestDevice(optionalServices: NotepadClient.optionalServices);
   }
 
   void startScan() {
@@ -48,14 +42,18 @@ class NotepadConnector {
 
     return NotepadCorePlatform.instance.scanResultStream
       .map((item) => NotepadScanResult.fromMap(item))
-      .where(support);
+      .where(NotepadClient.support);
   }
 
+  NotepadClient _notepadClient;
+
   void connect(scanResult) {
+    _notepadClient = NotepadClient.create(scanResult);
     NotepadCorePlatform.instance.connect(scanResult);
   }
 
   void disconnect() {
+    _notepadClient = null;
     NotepadCorePlatform.instance.disconnect();
   }
 
@@ -65,7 +63,10 @@ class NotepadConnector {
       switch(message) {
         case ConnectionState.connected:
           await configCharacteristics();
-          await completeConnection();
+          await _notepadClient.completeConnection();
+          break;
+        case ConnectionState.disconnected:
+          _notepadClient = null;
           break;
         default:
           print('ConnectionState ${message.value}');
@@ -74,12 +75,10 @@ class NotepadConnector {
   }
 
   Future<void> configCharacteristics() async {
-    await NotepadCorePlatform.instance.setNotifiable(Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST));
-  }
-
-  Future<void> completeConnection() async {
-    await sendRequestAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
-    await receiveResponseAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_RESPONSE), (data) => data.first == 0x02);
+    for (var serviceCharacteristic in _notepadClient.inputIndicationCharacteristics) {
+      print('configInputCharacteristic $serviceCharacteristic, indication');
+      await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic);
+    }
   }
 
   Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
