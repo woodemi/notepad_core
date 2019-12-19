@@ -44,7 +44,7 @@ packages:
     source: hosted
     version: "1.14.11"
   convert:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: convert
       url: "https://pub.flutter-io.cn"
@@ -67,11 +67,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_web_plugins:
-    dependency: transitive
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   image:
     dependency: transitive
     description:
@@ -79,13 +74,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.4"
-  js:
-    dependency: transitive
-    description:
-      name: js
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.6.1+1"
   matcher:
     dependency: transitive
     description:
@@ -100,20 +88,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.8"
-  notepad_core_platform_interface:
-    dependency: "direct main"
-    description:
-      path: "../notepad_core_platform_interface"
-      relative: true
-    source: path
-    version: "0.0.1"
-  notepad_core_web:
-    dependency: "direct main"
-    description:
-      path: "../notepad_core_web"
-      relative: true
-    source: path
-    version: "0.0.1"
   path:
     dependency: transitive
     description:
@@ -136,7 +110,7 @@ packages:
     source: hosted
     version: "2.4.0"
   plugin_platform_interface:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: plugin_platform_interface
       url: "https://pub.flutter-io.cn"
