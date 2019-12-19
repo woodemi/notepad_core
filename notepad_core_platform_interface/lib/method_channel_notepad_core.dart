@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
@@ -9,10 +10,12 @@ import 'notepad_core_platform_interface.dart';
 const _method = const MethodChannel('notepad_core/method');
 const _event_scanResult = const EventChannel('notepad_core/event.scanResult');
 const _message_connector = BasicMessageChannel('notepad_core/message.connector', StandardMessageCodec());
+const _message_client = BasicMessageChannel('notepad_core/message.client', StandardMessageCodec());
 
 class MethodChannelNotepadCore extends NotepadCorePlatform {
   MethodChannelNotepadCore() {
     _message_connector.setMessageHandler(_handleConnectorMessage);
+    _message_client.setMessageHandler(_handleClientMessage);
   }
 
   @override
@@ -71,10 +74,18 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     }
   }
 
+  // FIXME Close
+  final _characteristicConfigController = StreamController<String>.broadcast();
+
   @override
-  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) {
-    // TODO: implement setNotifiable
-    return null;
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+    _method.invokeMethod('setNotifiable', {
+      'service': serviceCharacteristic.item1,
+      'characteristic': serviceCharacteristic.item2,
+      'bleInputProperty': 'indication',
+    }).then((_) => print('setNotifiable invokeMethod success'));
+    // TODO Timeout
+    await _characteristicConfigController.stream.any((c) => c == serviceCharacteristic.item2);
   }
 
   @override
@@ -89,5 +100,16 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       // Characteristic sometimes unavailable on Android
       throw onError;
     });
+  }
+
+  Future<dynamic> _handleClientMessage(dynamic message) {
+    print('_handleClientMessage $message');
+    if (message['characteristicConfig'] != null) {
+      _characteristicConfigController.add(message['characteristicConfig']);
+    } else if (message['characteristicValue'] != null) {
+      var characteristicValue = message['characteristicValue'];
+      var value = Uint8List.fromList(characteristicValue['value']); // In case of _Uint8ArrayView
+      print('characteristicValue ${characteristicValue['characteristic']}, ${hex.encode(value)}');
+    }
   }
 }

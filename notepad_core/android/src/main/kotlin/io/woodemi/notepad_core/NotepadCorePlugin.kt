@@ -1,9 +1,6 @@
 package io.woodemi.notepad_core
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
@@ -56,6 +53,7 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
         MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
         EventChannel(messenger, "notepad_core/event.scanResult").setStreamHandler(this)
         connectorMessage = BasicMessageChannel(messenger, "notepad_core/message.connector", StandardMessageCodec.INSTANCE)
+        clientMessage = BasicMessageChannel(messenger, "notepad_core/message.client", StandardMessageCodec.INSTANCE)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -83,6 +81,13 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
             }
             "discoverServices" -> {
                 connectGatt?.discoverServices()
+                result.success(null)
+            }
+            "setNotifiable" -> {
+                val service = call.argument<String>("service")!!
+                val characteristic = call.argument<String>("characteristic")!!
+                val bleInputProperty = call.argument<String>("bleInputProperty")!!
+                connectGatt?.setNotifiable(service to characteristic, bleInputProperty)
                 result.success(null)
             }
             "writeValue" -> {
@@ -146,6 +151,8 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
 
     private lateinit var connectorMessage: BasicMessageChannel<Any>
 
+    private lateinit var clientMessage: BasicMessageChannel<Any>
+
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             if (gatt != connectGatt) {
@@ -177,12 +184,34 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
             mainThreadHandler.post { connectorMessage.send(mapOf("ServiceState" to "discovered")) }
         }
 
+        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onDescriptorWrite ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
+            mainThreadHandler.post { clientMessage.send(mapOf("characteristicConfig" to descriptor.characteristic.uuid.toString())) }
+        }
+
         override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
             if (gatt != connectGatt) {
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
             Log.v(TAG, "onCharacteristicWrite ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
+        }
+
+        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onCharacteristicChanged ${characteristic.uuid}, ${characteristic.value.contentToString()}")
+            val characteristicValue = mapOf(
+                    "characteristic" to characteristic.uuid.toString(),
+                    "value" to characteristic.value
+            )
+            mainThreadHandler.post { clientMessage.send(mapOf("characteristicValue" to characteristicValue)) }
         }
     }
 }
@@ -200,3 +229,16 @@ fun Short.toByteArray(byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN): ByteArray
 
 fun BluetoothGatt.getCharacteristic(serviceCharacteristic: Pair<String, String>) =
         getService(UUID.fromString(serviceCharacteristic.first)).getCharacteristic(UUID.fromString(serviceCharacteristic.second))
+
+private val DESC__CLIENT_CHAR_CONFIGURATION = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+fun BluetoothGatt.setNotifiable(serviceCharacteristic: Pair<String, String>, bleInputProperty: String) {
+    val descriptor = getCharacteristic(serviceCharacteristic).getDescriptor(DESC__CLIENT_CHAR_CONFIGURATION)
+    val (value, enable) = when (bleInputProperty) {
+        "notification" -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE to true
+        "indication" -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE to true
+        else -> BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE to false
+    }
+    descriptor.value = value
+    setCharacteristicNotification(descriptor.characteristic, enable) && writeDescriptor(descriptor)
+}

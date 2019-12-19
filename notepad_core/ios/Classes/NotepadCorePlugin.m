@@ -32,6 +32,11 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
     }];
     return characteristics[characteristicIndex];
 }
+
+- (void)setNotifiable:(NSString *)bleInputProperty forCharacteristic:(NSString *)characteristic ofService:(NSString *)service {
+    [self setNotifyValue:![bleInputProperty isEqualToString:@"disabled"]
+       forCharacteristic:[self getCharacteristic:characteristic ofService:service]];
+}
 @end
 
 # pragma NotepadCorePlugin
@@ -44,6 +49,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
 @property(nonatomic, strong) dispatch_group_t serviceConfigGroup;
 
 @property(nonatomic, strong) FlutterBasicMessageChannel *connectorMessage;
+@property(nonatomic, strong) FlutterBasicMessageChannel *clientMessage;
 @property(nonatomic, strong) FlutterEventSink scanResultSink;
 
 @end
@@ -62,6 +68,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
         [registrar addMethodCallDelegate:self channel:methodChannel];
         [[FlutterEventChannel eventChannelWithName:@"notepad_core/event.scanResult" binaryMessenger:[registrar messenger]] setStreamHandler:self];
         _connectorMessage = [FlutterBasicMessageChannel messageChannelWithName:@"notepad_core/message.connector" binaryMessenger:[registrar messenger]];
+        _clientMessage = [FlutterBasicMessageChannel messageChannelWithName:@"notepad_core/message.client" binaryMessenger:[registrar messenger]];
     }
     return self;
 }
@@ -88,6 +95,12 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
         result(nil);
     } else if ([call.method isEqualToString:@"discoverServices"]) {
         [_peripheral discoverServices:nil];
+        result(nil);
+    } else if ([call.method isEqualToString:@"setNotifiable"]) {
+        NSString *service = call.arguments[@"service"];
+        NSString *characteristic = call.arguments[@"characteristic"];
+        NSString *bleInputProperty = call.arguments[@"bleInputProperty"];
+        [_peripheral setNotifiable:bleInputProperty forCharacteristic:characteristic ofService:service];
         result(nil);
     } else if ([call.method isEqualToString:@"writeValue"]) {
         NSString *service = call.arguments[@"service"];
@@ -193,12 +206,34 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
     dispatch_group_leave(_serviceConfigGroup);
 }
 
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    NSLog(@"peripheral:didUpdateNotificationStateFor %@ %d", characteristic.UUID, characteristic.isNotifying);
+    [_clientMessage sendMessage:@{@"characteristicConfig": characteristic.UUID.uuidString}];
+}
+
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
     if (peripheral != _peripheral) {
         NSLog(@"Probably MEMORY LEAK!");
         return;
     }
     NSLog(@"peripheral:didWriteValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidString, characteristic.value, error);
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    NSLog(@"peripheral:didUpdateValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidString, characteristic.value, error);
+    NSDictionary *characteristicValue = @{
+            @"characteristic": characteristic.UUID.uuidString,
+            @"value": [FlutterStandardTypedData typedDataWithBytes:characteristic.value],
+    };
+    [_clientMessage sendMessage:@{@"characteristicValue": characteristicValue}];
 }
 
 @end
