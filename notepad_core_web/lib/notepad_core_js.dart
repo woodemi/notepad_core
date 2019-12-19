@@ -1,13 +1,16 @@
 @JS()
 library notepad_core_js;
 
-import 'dart:html';
+import 'dart:html' show EventTarget;
 
 import 'package:js/js.dart';
+import 'package:js/js_util.dart' show getProperty, callMethod;
+
+import 'js_facade.dart';
 
 @JS('navigator.bluetooth')
 class Bluetooth {
-  external static dynamic requestDevice(ScanOptions options);
+  external static Promise<dynamic> requestDevice(ScanOptions options);
 }
 
 @JS()
@@ -20,25 +23,40 @@ class ScanOptions {
   });
 }
 
-@JS()
-mixin BluetoothDevice implements EventTarget {
+class BluetoothDevice extends EventTargetDelegate {
   /// Event type should be [const]
   static const String disconnectEvent = 'gattserverdisconnected';
 
-  external String get id;
+  final EventTarget _delegate;
 
-  external String get name;
+  BluetoothDevice(this._delegate) {
+    _gatt = BluetoothRemoteGATTServer(getProperty(_delegate, 'gatt'), this);
+  }
 
-  external BluetoothRemoteGATTServer get gatt;
+  @override
+  EventTarget get eventTarget => _delegate;
+
+  String get id => getProperty(_delegate, 'id');
+
+  String get name => getProperty(_delegate, 'name');
+
+  BluetoothRemoteGATTServer _gatt;
+
+  BluetoothRemoteGATTServer get gatt => _gatt;
 }
 
-@JS()
 class BluetoothRemoteGATTServer {
-  external BluetoothDevice get device;
+  final dynamic _delegate;
 
-  external bool get connected;
+  BluetoothRemoteGATTServer(this._delegate, this._device);
 
-  external dynamic connect();
+  final BluetoothDevice _device;
 
-  external void disconnect();
+  BluetoothDevice get device => _device;
+
+  bool get connected => getProperty(_delegate, 'connected');
+
+  Promise<dynamic> connect() => callMethod(_delegate, 'connect', null);
+
+  void disconnect() => callMethod(_delegate, 'disconnect', null);
 }
