@@ -1,12 +1,47 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "NotepadCorePlugin.h"
 
+NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
+
+# pragma CBUUID+Extensions
+
+@interface CBUUID (Extensions)
+@end
+
+@implementation CBUUID (Extensions)
+- (NSString *)uuidString {
+    return [self.UUIDString lowercaseString];
+}
+@end
+
+# pragma CBPeripheral+Extensions
+
+@interface CBPeripheral (Extensions)
+@end
+
+@implementation CBPeripheral (Extensions)
+- (CBCharacteristic *)getCharacteristic:(NSString *)characteristic ofService:(NSString *)service {
+    NSUInteger serviceIndex = [self.services indexOfObjectPassingTest:^BOOL(CBService *obj, NSUInteger idx, BOOL *stop) {
+        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidString, GSS_SUFFIX];
+        return [obj.UUID.uuidString isEqualToString:service] || [withGss isEqualToString:service];
+    }];
+    NSArray<CBCharacteristic *> *characteristics = self.services[serviceIndex].characteristics;
+    NSUInteger characteristicIndex = [characteristics indexOfObjectPassingTest:^BOOL(CBCharacteristic *obj, NSUInteger idx, BOOL *stop) {
+        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidString, GSS_SUFFIX];
+        return [obj.UUID.uuidString isEqualToString:characteristic] || [withGss isEqualToString:characteristic];
+    }];
+    return characteristics[characteristicIndex];
+}
+@end
+
 # pragma NotepadCorePlugin
 
-@interface NotepadCorePlugin () <CBCentralManagerDelegate, FlutterStreamHandler>
+@interface NotepadCorePlugin () <CBCentralManagerDelegate, FlutterStreamHandler, CBPeripheralDelegate>
 @property(nonatomic, strong) CBCentralManager *manager;
 @property(nonatomic, strong) NSMutableDictionary<NSString *, CBPeripheral *> *discoveredPeripherals;
 @property(nonatomic, strong) CBPeripheral *peripheral;
+
+@property(nonatomic, strong) dispatch_group_t serviceConfigGroup;
 
 @property(nonatomic, strong) FlutterBasicMessageChannel *connectorMessage;
 @property(nonatomic, strong) FlutterEventSink scanResultSink;
@@ -44,11 +79,25 @@
     } else if ([call.method isEqualToString:@"connect"]) {
         NSString *deviceId = call.arguments[@"deviceId"];
         _peripheral = _discoveredPeripherals[deviceId];
+        _peripheral.delegate = self;
         [_manager connectPeripheral:_peripheral options:nil];
         result(nil);
     } else if ([call.method isEqualToString:@"disconnect"]) {
         [_manager cancelPeripheralConnection:_peripheral];
         _peripheral = nil;
+        result(nil);
+    } else if ([call.method isEqualToString:@"discoverServices"]) {
+        [_peripheral discoverServices:nil];
+        result(nil);
+    } else if ([call.method isEqualToString:@"writeValue"]) {
+        NSString *service = call.arguments[@"service"];
+        NSString *characteristic = call.arguments[@"characteristic"];
+        FlutterStandardTypedData *value = call.arguments[@"value"];
+        NSString *bleOutputProperty = call.arguments[@"bleOutputProperty"];
+        enum CBCharacteristicWriteType type = [bleOutputProperty isEqualToString:@"withoutResponse"] ? CBCharacteristicWriteWithoutResponse : CBCharacteristicWriteWithResponse;
+        [_peripheral writeValue:[value data]
+              forCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]
+                           type:type];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);
@@ -112,6 +161,44 @@
         _scanResultSink = nil;
     }
     return nil;
+}
+
+# pragma CBPeripheralDelegate
+
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    NSLog(@"peripheral: %@ didDiscoverServices: %@", peripheral.identifier, error);
+    _serviceConfigGroup = dispatch_group_create();
+    for (CBService *service in peripheral.services) {
+        dispatch_group_enter(_serviceConfigGroup);
+        [peripheral discoverCharacteristics:nil forService:service];
+    }
+    dispatch_group_notify(_serviceConfigGroup, dispatch_get_main_queue(), ^{
+        self->_serviceConfigGroup = nil;
+        [self->_connectorMessage sendMessage:@{@"ServiceState": @"discovered"}];
+    });
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    for (CBCharacteristic *characteristic in service.characteristics) {
+        NSLog(@"peripheral:didDiscoverCharacteristicsForService (%@, %@)", service.UUID.uuidString, characteristic.UUID.uuidString);
+    }
+    dispatch_group_leave(_serviceConfigGroup);
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    NSLog(@"peripheral:didWriteValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidString, characteristic.value, error);
 }
 
 @end
