@@ -1,6 +1,10 @@
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:notepad_core/Notepad.dart';
 import 'package:notepad_core/notepad_core.dart';
+
+import 'NotepadDetailPage.dart';
 
 class MobileApp extends StatelessWidget {
   @override
@@ -17,6 +21,24 @@ class _MobileHomePage extends StatefulWidget {
 }
 
 class _MobileHomePageState extends State<_MobileHomePage> {
+  StreamSubscription<NotepadScanResult> _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = notepadConnector.scanResultStream.listen((result) {
+      if (!_scanResults.any((r) => r.deviceId == result.deviceId)) {
+        setState(() => _scanResults.add(result));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription?.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,6 +48,8 @@ class _MobileHomePageState extends State<_MobileHomePage> {
       body: Column(
         children: <Widget>[
           _buildButtons(),
+          Divider(color: Colors.blue,),
+          _buildListView(),
         ],
       ),
     );
@@ -33,6 +57,7 @@ class _MobileHomePageState extends State<_MobileHomePage> {
 
   Widget _buildButtons() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
         RaisedButton(
           child: Text('startScan'),
@@ -47,6 +72,27 @@ class _MobileHomePageState extends State<_MobileHomePage> {
           },
         ),
       ],
+    );
+  }
+
+  var _scanResults = List<NotepadScanResult>();
+
+  Widget _buildListView() {
+    return Expanded(
+      child: ListView.separated(
+        itemBuilder: (context, index) =>
+            ListTile(
+              title: Text('${_scanResults[index].name}(${_scanResults[index].rssi})'),
+              subtitle: Text(_scanResults[index].deviceId),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => NotepadDetailPage(_scanResults[index]),
+                ));
+              },
+            ),
+        separatorBuilder: (context, index) => Divider(),
+        itemCount: _scanResults.length,
+      ),
     );
   }
 }

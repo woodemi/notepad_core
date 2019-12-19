@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
 
+import 'NotepadDetailPage.dart';
+
 class WebApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,9 @@ class _WebHomePageState extends State<_WebHomePage> {
             child: Text('requestDevice'),
             onPressed: () async {
               var device = await notepadConnector.requestDevice();
-              print('requestDevice $device');
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => NotepadDetailPage(device),
+              ));
             },
           ),
         ],

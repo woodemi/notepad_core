@@ -1,5 +1,13 @@
+import 'dart:html';
+import 'dart:typed_data';
+
+import 'package:convert/convert.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:js/js.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+
+import 'js_facade.dart';
+import 'notepad_core_js.dart';
 
 class NotepadCorePlugin extends NotepadCorePlatform {
   static void registerWith(Registrar registrar) {
@@ -7,8 +15,14 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<dynamic> requestDevice() async {
-    // TODO: implement requestDevice
+  Future<dynamic> requestDevice({
+    List<String> optionalServices,
+  }) async {
+    var requestDevice = Bluetooth.requestDevice(ScanOptions(
+      optionalServices: optionalServices.map(getServiceUUID).toList(),
+      acceptAllDevices: true,
+    ));
+    return BluetoothDevice(await promiseToFuture(requestDevice));
   }
 
   @override
@@ -20,4 +34,72 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   void stopScan() {
     throw UnimplementedError('Not implemented in NotepadCorePlugin');
   }
+
+  @override
+  Stream<dynamic> get scanResultStream {
+    throw UnimplementedError('Not implemented in NotepadCorePlugin');
+  }
+
+  BluetoothRemoteGATTServer _connectGatt;
+
+  @override
+  void connect(scanResult) {
+    (scanResult as BluetoothDevice).gatt.connect().then((result) {
+      _connectGatt = result;
+      print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
+      _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+
+      if (messageHandler != null) messageHandler(ConnectionState.connected);
+    }, onError: (error) {
+      print('onConnectFail $error');
+      if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+    });
+
+    if (messageHandler != null) messageHandler(ConnectionState.connecting);
+  }
+
+  @override
+  void disconnect() {
+    _connectGatt?.disconnect();
+    _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+    _connectGatt = null;
+  }
+
+  /// FIXME [removeEventListener] not work
+  void _handleDisconnectEvent(Event event) {
+    print('_handleDisconnectEvent ${event.target.hashCode}');
+    if (event.target != _connectGatt?.device?.delegate) {
+      print('Probably MEMORY LEAK!');
+      return;
+    }
+
+    _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
+    _connectGatt = null;
+ 
+    if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+  }
+
+  @override
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    characteristic.startNotifications();
+    characteristic.addEventListener(BluetoothRemoteGATTCharacteristic.valueChangedEvent, allowInterop(_onCharacteristicValueChange));
+  }
+
+  @override
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    await characteristic.writeValue(value);
+  }
+
+  void _onCharacteristicValueChange(Event event) {
+    var characteristic = BluetoothRemoteGATTCharacteristic(event.target);
+    var bytes = characteristic.value;
+    print('_onCharacteristicValueChange ${characteristic.uuid} ${hex.encode(bytes)}');
+  }
+}
+
+Future<BluetoothRemoteGATTCharacteristic> getCharacteristic(BluetoothRemoteGATTServer gatt, Tuple2<String, String> serviceCharacteristic) async {
+  var service = await gatt.getPrimaryService(getServiceUUID(serviceCharacteristic.item1));
+  return await service.getCharacteristic(getCharacteristicUUID(serviceCharacteristic.item2));
 }
