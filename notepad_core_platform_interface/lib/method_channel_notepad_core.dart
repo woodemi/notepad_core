@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
 
@@ -102,6 +103,12 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     });
   }
 
+  // FIXME Close
+  final _characteristicValueController = StreamController<Tuple2<String, Uint8List>>.broadcast();
+
+  @override
+  Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
+
   Future<dynamic> _handleClientMessage(dynamic message) {
     print('_handleClientMessage $message');
     if (message['characteristicConfig'] != null) {
@@ -109,7 +116,7 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     } else if (message['characteristicValue'] != null) {
       var characteristicValue = message['characteristicValue'];
       var value = Uint8List.fromList(characteristicValue['value']); // In case of _Uint8ArrayView
-      print('characteristicValue ${characteristicValue['characteristic']}, ${hex.encode(value)}');
+      _characteristicValueController.add(Tuple2(characteristicValue['characteristic'], value));
     }
   }
 }
