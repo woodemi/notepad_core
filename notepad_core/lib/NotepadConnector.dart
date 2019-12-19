@@ -6,11 +6,15 @@ import 'package:convert/convert.dart';
 
 import 'Notepad.dart';
 
+const GSS_SUFFIX = '0000-1000-8000-00805f9b34fb';
+
 const SUFFIX = 'ba5e-f4ee-5ca1-eb1e5e4b1ce0';
 
 const SERV__COMMAND = '57444d01-$SUFFIX';
 const CHAR__COMMAND_REQUEST = '57444e02-$SUFFIX';
 const CHAR__COMMAND_RESPONSE = CHAR__COMMAND_REQUEST;
+
+typedef Predicate = bool Function(Uint8List data);
 
 final notepadConnector = NotepadConnector._();
 
@@ -75,10 +79,22 @@ class NotepadConnector {
 
   Future<void> completeConnection() async {
     await sendRequestAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
+    await receiveResponseAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_RESPONSE), (data) => data.first == 0x02);
   }
 
   Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
     await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request);
     print('on${messageHead}Send: ${hex.encode(request)}');
+  }
+
+  Stream<Uint8List> receiveValue(Tuple2<String, String> serviceCharacteristic) =>
+      NotepadCorePlatform.instance.inputValueStream.where((cv) {
+        return cv.item1 == serviceCharacteristic.item2 || '0000${cv.item1}-$GSS_SUFFIX' == serviceCharacteristic.item2;
+      }).map((cv) => cv.item2);
+
+  Future<Uint8List> receiveResponseAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Predicate intercept) async {
+    var response = await receiveValue(serviceCharacteristic).firstWhere(intercept);
+    print('on${messageHead}Receive: ${hex.encode(response)}');
+    return response;
   }
 }
