@@ -8,6 +8,7 @@
 @property(nonatomic, strong) NSMutableDictionary<NSString *, CBPeripheral *> *discoveredPeripherals;
 @property(nonatomic, strong) CBPeripheral *peripheral;
 
+@property(nonatomic, strong) FlutterBasicMessageChannel *connectorMessage;
 @property(nonatomic, strong) FlutterEventSink scanResultSink;
 
 @end
@@ -25,6 +26,7 @@
         FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"notepad_core/method" binaryMessenger:[registrar messenger]];
         [registrar addMethodCallDelegate:self channel:methodChannel];
         [[FlutterEventChannel eventChannelWithName:@"notepad_core/event.scanResult" binaryMessenger:[registrar messenger]] setStreamHandler:self];
+        _connectorMessage = [FlutterBasicMessageChannel messageChannelWithName:@"notepad_core/message.connector" binaryMessenger:[registrar messenger]];
     }
     return self;
 }
@@ -74,8 +76,22 @@
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
-    if (peripheral != _peripheral) NSLog(@"Probably MEMORY LEAK!");
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
     NSLog(@"centralManager:didConnect %@", peripheral.identifier);
+    [_connectorMessage sendMessage:@{@"ConnectionState": @"connected"}];
+}
+
+- (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(nullable NSError *)error {
+    if (peripheral != _peripheral) {
+        NSLog(@"Probably MEMORY LEAK!");
+        return;
+    }
+    NSLog(@"centralManager:didDisconnectPeripheral: %@ error: %@", peripheral.identifier, error);
+    _peripheral = nil;
+    [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
 }
 
 # pragma FlutterStreamHandler
