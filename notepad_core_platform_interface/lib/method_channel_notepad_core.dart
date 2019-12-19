@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
+import 'notepad_core_platform_interface.dart';
+
 const _method = const MethodChannel('notepad_core/method');
 const _event_scanResult = const EventChannel('notepad_core/event.scanResult');
 const _message_connector = BasicMessageChannel('notepad_core/message.connector', StandardMessageCodec());
@@ -57,13 +59,28 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     print('_handleConnectorMessage $message');
     if (message['ConnectionState'] != null) {
       var connectionState = ConnectionState.parse(message['ConnectionState']);
-      if (messageHandler != null) messageHandler(connectionState);
+      if (connectionState == ConnectionState.connected) {
+        _method.invokeMethod('discoverServices').then((_) => print('discoverServices invokeMethod success'));
+      } else {
+        if (messageHandler != null) messageHandler(connectionState);
+      }
+    } else if (message['ServiceState'] != null) {
+      if (message['ServiceState'] == 'discovered')
+        if (messageHandler != null) messageHandler(ConnectionState.connected);
     }
   }
 
   @override
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) {
-    // TODO: implement writeValue
-    return null;
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+    _method.invokeMethod('writeValue', {
+      'service': serviceCharacteristic.item1,
+      'characteristic': serviceCharacteristic.item2,
+      'value': value,
+    }).then((_) {
+      print('writeValue invokeMethod success');
+    }).catchError((onError) {
+      // Characteristic sometimes unavailable on Android
+      throw onError;
+    });
   }
 }

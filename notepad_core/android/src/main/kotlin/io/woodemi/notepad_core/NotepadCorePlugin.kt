@@ -2,6 +2,7 @@ package io.woodemi.notepad_core
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -17,6 +18,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.*
 
 private const val TAG = "NotepadCorePlugin"
 
@@ -78,6 +80,23 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
                 connectGatt?.close()
                 connectGatt = null
                 result.success(null)
+            }
+            "discoverServices" -> {
+                connectGatt?.discoverServices()
+                result.success(null)
+            }
+            "writeValue" -> {
+                val service = call.argument<String>("service")!!
+                val characteristic = call.argument<String>("characteristic")!!
+                val value = call.argument<ByteArray>("value")!!
+                val writeResult = connectGatt?.getCharacteristic(service to characteristic)?.let {
+                    it.value = value
+                    connectGatt?.writeCharacteristic(it)
+                }
+                if (writeResult == true)
+                    result.success(null)
+                else
+                    result.error("Characteristic unavailable", null, null)
             }
             else -> result.notImplemented()
         }
@@ -142,6 +161,29 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
                 mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "disconnected")) }
             }
         }
+
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            if (gatt != connectGatt || status != BluetoothGatt.GATT_SUCCESS) return
+            gatt?.services?.forEach { service ->
+                Log.v(TAG, "Service " + service.uuid)
+                service.characteristics.forEach { characteristic ->
+                    Log.v(TAG, "    Characteristic ${characteristic.uuid}")
+                    characteristic.descriptors.forEach {
+                        Log.v(TAG, "        Descriptor ${it.uuid}")
+                    }
+                }
+            }
+
+            mainThreadHandler.post { connectorMessage.send(mapOf("ServiceState" to "discovered")) }
+        }
+
+        override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onCharacteristicWrite ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
+        }
     }
 }
 
@@ -155,3 +197,6 @@ val ScanResult.manufacturerData: ByteArray?
 
 fun Short.toByteArray(byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN): ByteArray =
         ByteBuffer.allocate(2 /*Short.SIZE_BYTES*/).order(byteOrder).putShort(this).array()
+
+fun BluetoothGatt.getCharacteristic(serviceCharacteristic: Pair<String, String>) =
+        getService(UUID.fromString(serviceCharacteristic.first)).getCharacteristic(UUID.fromString(serviceCharacteristic.second))
