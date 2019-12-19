@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:html' show EventTarget, EventListener;
 
 import 'package:js/js.dart';
+import 'package:js/js_util.dart' as js_util;
 
 @JS()
 class Promise<T> {
@@ -19,12 +20,24 @@ Future<T> promiseToFuture<T>(Promise<T> promise) {
   return c.future;
 }
 
-abstract class EventTargetDelegate {
-  EventTarget get eventTarget;
+abstract class Delegate<T> {
+  final T _delegate;
+
+  T get delegate => _delegate;
+
+  Delegate(this._delegate);
+
+  T getProperty<T>(dynamic name) => js_util.getProperty(_delegate, name);
+
+  T callMethod<T>(String method, List args) => js_util.callMethod(_delegate, method, args);
+}
+
+abstract class EventTargetDelegate extends Delegate<EventTarget> {
+  EventTargetDelegate(EventTarget delegate) : super(delegate);
 
   void addEventListener(String type, EventListener listener, [bool useCapture]) =>
-    eventTarget.addEventListener(type, listener, useCapture);
+    delegate.addEventListener(type, listener, useCapture);
 
   void removeEventListener(String type, EventListener listener, [bool useCapture]) =>
-    eventTarget.removeEventListener(type, listener, useCapture);
+    delegate.removeEventListener(type, listener, useCapture);
 }

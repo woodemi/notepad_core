@@ -2,9 +2,9 @@
 library notepad_core_js;
 
 import 'dart:html' show EventTarget;
+import 'dart:typed_data';
 
 import 'package:js/js.dart';
-import 'package:js/js_util.dart' show getProperty, callMethod;
 
 import 'js_facade.dart';
 
@@ -16,9 +16,12 @@ class Bluetooth {
 @JS()
 @anonymous
 class ScanOptions {
+  external set optionalServices(List<dynamic> list);
+
   external set acceptAllDevices(bool v);
 
   external factory ScanOptions({
+    List<dynamic> optionalServices,
     bool acceptAllDevices,
   });
 }
@@ -27,36 +30,61 @@ class BluetoothDevice extends EventTargetDelegate {
   /// Event type should be [const]
   static const String disconnectEvent = 'gattserverdisconnected';
 
-  final EventTarget _delegate;
-
-  BluetoothDevice(this._delegate) {
-    _gatt = BluetoothRemoteGATTServer(getProperty(_delegate, 'gatt'), this);
+  BluetoothDevice(EventTarget delegate): super(delegate) {
+    _gatt = BluetoothRemoteGATTServer(getProperty('gatt'), this);
   }
 
-  @override
-  EventTarget get eventTarget => _delegate;
+  String get id => getProperty('id');
 
-  String get id => getProperty(_delegate, 'id');
-
-  String get name => getProperty(_delegate, 'name');
+  String get name => getProperty('name');
 
   BluetoothRemoteGATTServer _gatt;
 
   BluetoothRemoteGATTServer get gatt => _gatt;
 }
 
-class BluetoothRemoteGATTServer {
-  final dynamic _delegate;
-
-  BluetoothRemoteGATTServer(this._delegate, this._device);
+class BluetoothRemoteGATTServer extends Delegate<dynamic> {
+  BluetoothRemoteGATTServer(dynamic delegate, this._device): super(delegate);
 
   final BluetoothDevice _device;
 
   BluetoothDevice get device => _device;
 
-  bool get connected => getProperty(_delegate, 'connected');
+  bool get connected => getProperty('connected');
 
-  Promise<dynamic> connect() => callMethod(_delegate, 'connect', null);
+  Future<BluetoothRemoteGATTServer> connect() {
+    var promise = callMethod('connect', null);
+    return promiseToFuture(promise).then((_) => this);
+  }
 
-  void disconnect() => callMethod(_delegate, 'disconnect', null);
+  void disconnect() => callMethod('disconnect', null);
+
+  Future<BluetoothRemoteGATTService> getPrimaryService(dynamic bluetoothUuid) {
+    var promise = callMethod('getPrimaryService', [bluetoothUuid]);
+    return promiseToFuture(promise).then((result) => BluetoothRemoteGATTService(result));
+  }
+}
+
+@JS('BluetoothUUID.getService')
+external dynamic getServiceUUID(String name);
+
+@JS('BluetoothUUID.getCharacteristic')
+external dynamic getCharacteristicUUID(String name);
+
+class BluetoothRemoteGATTService extends Delegate<dynamic> {
+  BluetoothRemoteGATTService(dynamic delegate): super(delegate);
+
+  Future<BluetoothRemoteGATTCharacteristic> getCharacteristic(dynamic bluetoothUuid) {
+    var promise = callMethod('getCharacteristic', [bluetoothUuid]);
+    return promiseToFuture(promise).then((result) => BluetoothRemoteGATTCharacteristic(result));
+  }
+}
+
+class BluetoothRemoteGATTCharacteristic extends Delegate<dynamic> {
+  BluetoothRemoteGATTCharacteristic(dynamic delegate): super(delegate);
+
+  Future<dynamic> writeValue(Uint8List bytes) {
+    var promise = callMethod('writeValue', [bytes]);
+    return promiseToFuture(promise);
+  }
 }

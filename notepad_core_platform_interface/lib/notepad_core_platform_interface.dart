@@ -38,7 +38,9 @@ abstract class NotepadCorePlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<dynamic> requestDevice();
+  Future<dynamic> requestDevice({
+    List<String> optionalServices,
+  });
 
   void startScan();
 

@@ -13,8 +13,11 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<dynamic> requestDevice() async {
+  Future<dynamic> requestDevice({
+    List<String> optionalServices,
+  }) async {
     var requestDevice = Bluetooth.requestDevice(ScanOptions(
+      optionalServices: optionalServices.map(getServiceUUID).toList(),
       acceptAllDevices: true,
     ));
     return BluetoothDevice(await promiseToFuture(requestDevice));
@@ -39,9 +42,8 @@ class NotepadCorePlugin extends NotepadCorePlatform {
 
   @override
   void connect(scanResult) {
-    final gatt = (scanResult as BluetoothDevice).gatt;
-    promiseToFuture(gatt.connect()).then((result) {
-      _connectGatt = gatt;
+    (scanResult as BluetoothDevice).gatt.connect().then((result) {
+      _connectGatt = result;
       print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
       _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
 
@@ -64,7 +66,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   /// FIXME [removeEventListener] not work
   void _handleDisconnectEvent(Event event) {
     print('_handleDisconnectEvent ${event.target.hashCode}');
-    if (event.target != _connectGatt?.device?.eventTarget) {
+    if (event.target != _connectGatt?.device?.delegate) {
       print('Probably MEMORY LEAK!');
       return;
     }
@@ -76,8 +78,13 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) {
-    // TODO: implement writeValue
-    return null;
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    await characteristic.writeValue(value);
   }
+}
+
+Future<BluetoothRemoteGATTCharacteristic> getCharacteristic(BluetoothRemoteGATTServer gatt, Tuple2<String, String> serviceCharacteristic) async {
+  var service = await gatt.getPrimaryService(getServiceUUID(serviceCharacteristic.item1));
+  return await service.getCharacteristic(getCharacteristicUUID(serviceCharacteristic.item2));
 }
