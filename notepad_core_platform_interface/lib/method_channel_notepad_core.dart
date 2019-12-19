@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
 
@@ -68,6 +69,12 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       if (message['ServiceState'] == 'discovered')
         if (messageHandler != null) messageHandler(ConnectionState.connected);
     }
+  }
+
+  @override
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) {
+    // TODO: implement setNotifiable
+    return null;
   }
 
   @override

@@ -60,6 +60,7 @@ class NotepadConnector {
     if (message is ConnectionState) {
       switch(message) {
         case ConnectionState.connected:
+          await configCharacteristics();
           await completeConnection();
           break;
         default:
@@ -68,7 +69,11 @@ class NotepadConnector {
     }
   }
 
-  Future<dynamic> completeConnection() async {
+  Future<void> configCharacteristics() async {
+    await NotepadCorePlatform.instance.setNotifiable(Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST));
+  }
+
+  Future<void> completeConnection() async {
     await sendRequestAsync('Command', Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
   }
 
