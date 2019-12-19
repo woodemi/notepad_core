@@ -6,13 +6,12 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
@@ -54,6 +53,7 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
 
         MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
         EventChannel(messenger, "notepad_core/event.scanResult").setStreamHandler(this)
+        connectorMessage = BasicMessageChannel(messenger, "notepad_core/message.connector", StandardMessageCodec.INSTANCE)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -123,10 +123,24 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
 
     private var connectGatt: BluetoothGatt? = null
 
+    private val mainThreadHandler = Handler(Looper.getMainLooper())
+
+    private lateinit var connectorMessage: BasicMessageChannel<Any>
+
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-            if (gatt != connectGatt) Log.e(TAG, "Probably MEMORY LEAK!")
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
             Log.v(TAG, "onConnectionStateChange: status($status), newState($newState)")
+            if (newState == BluetoothGatt.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
+                mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "connected")) }
+            } else {
+                connectGatt?.close()
+                connectGatt = null
+                mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "disconnected")) }
+            }
         }
     }
 }
