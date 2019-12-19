@@ -1,9 +1,9 @@
 import 'dart:html';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:js/js_util.dart' show promiseToFuture, getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
+import 'js_facade.dart';
 import 'notepad_core_js.dart';
 
 class NotepadCorePlugin extends NotepadCorePlatform {
@@ -16,7 +16,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     var requestDevice = Bluetooth.requestDevice(ScanOptions(
       acceptAllDevices: true,
     ));
-    return promiseToFuture(requestDevice);
+    return BluetoothDevice(await promiseToFuture(requestDevice));
   }
 
   @override
@@ -38,9 +38,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
 
   @override
   void connect(scanResult) {
-    final connect = (scanResult as BluetoothDevice).gatt.connect();
-    promiseToFuture(connect).then((result) {
-      _connectGatt = (result as BluetoothRemoteGATTServer);
+    final gatt = (scanResult as BluetoothDevice).gatt;
+    promiseToFuture(gatt.connect()).then((result) {
+      _connectGatt = gatt;
       print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
       _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
 
@@ -63,7 +63,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   /// FIXME [removeEventListener] not work
   void _handleDisconnectEvent(Event event) {
     print('_handleDisconnectEvent ${event.target.hashCode}');
-    if (event.target != _connectGatt?.device) {
+    if (event.target != _connectGatt?.device?.eventTarget) {
       print('Probably MEMORY LEAK!');
       return;
     }
