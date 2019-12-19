@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:typed_data';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
@@ -72,5 +73,11 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     _connectGatt = null;
  
     if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+  }
+
+  @override
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) {
+    // TODO: implement writeValue
+    return null;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
@@ -55,5 +57,11 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       var connectionState = ConnectionState.parse(message['ConnectionState']);
       if (messageHandler != null) messageHandler(connectionState);
     }
+  }
+
+  @override
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) {
+    // TODO: implement writeValue
+    return null;
   }
 }

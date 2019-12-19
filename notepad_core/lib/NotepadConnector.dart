@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:convert/convert.dart';
 
 import 'Notepad.dart';
 
@@ -49,7 +52,22 @@ class NotepadConnector {
   Future<void> _handleMessage(NotepadCoreMessage message) async {
     print('$_tag handleMessage $message');
     if (message is ConnectionState) {
-      print('ConnectionState ${message.value}');
+      switch(message) {
+        case ConnectionState.connected:
+          await completeConnection();
+          break;
+        default:
+          print('ConnectionState ${message.value}');
+      }
     }
+  }
+
+  Future<dynamic> completeConnection() async {
+    await sendRequestAsync('Command', Tuple2('57444d01-ba5e-f4ee-5ca1-eb1e5e4b1ce0', '57444e02-ba5e-f4ee-5ca1-eb1e5e4b1ce0'), Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x00]));
+  }
+
+  Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
+    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request);
+    print('on${messageHead}Send: ${hex.encode(request)}');
   }
 }
