@@ -80,11 +80,22 @@ class BluetoothRemoteGATTService extends Delegate<dynamic> {
   }
 }
 
-class BluetoothRemoteGATTCharacteristic extends Delegate<dynamic> {
-  BluetoothRemoteGATTCharacteristic(dynamic delegate): super(delegate);
+class BluetoothRemoteGATTCharacteristic extends EventTargetDelegate {
+  static const valueChangedEvent = 'characteristicvaluechanged';
+
+  BluetoothRemoteGATTCharacteristic(EventTarget delegate): super(delegate);
+
+  String get uuid => getProperty('uuid');
+
+  Uint8List get value => (getProperty('value') as ByteData).buffer.asUint8List();
 
   Future<dynamic> writeValue(Uint8List bytes) {
     var promise = callMethod('writeValue', [bytes]);
+    return promiseToFuture(promise);
+  }
+
+  Future<dynamic> startNotifications() {
+    var promise = callMethod('startNotifications', null);
     return promiseToFuture(promise);
   }
 }

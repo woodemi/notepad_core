@@ -1,7 +1,9 @@
 import 'dart:html';
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:js/js.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'js_facade.dart';
@@ -78,9 +80,22 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    characteristic.startNotifications();
+    characteristic.addEventListener(BluetoothRemoteGATTCharacteristic.valueChangedEvent, allowInterop(_onCharacteristicValueChange));
+  }
+
+  @override
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     await characteristic.writeValue(value);
+  }
+
+  void _onCharacteristicValueChange(Event event) {
+    var characteristic = BluetoothRemoteGATTCharacteristic(event.target);
+    var bytes = characteristic.value;
+    print('_onCharacteristicValueChange ${characteristic.uuid} ${hex.encode(bytes)}');
   }
 }
 
