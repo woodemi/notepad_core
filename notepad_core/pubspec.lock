@@ -106,14 +106,14 @@ packages:
       path: "../notepad_core_platform_interface"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "1.0.0"
   notepad_core_web:
     dependency: "direct main"
     description:
       path: "../notepad_core_web"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "1.0.0"
   path:
     dependency: transitive
     description:

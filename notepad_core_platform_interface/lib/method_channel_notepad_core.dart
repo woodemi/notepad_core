@@ -50,7 +50,7 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     _method.invokeMethod('connect', {
       'deviceId': scanResult.deviceId,
     }).then((_) => print('connect invokeMethod success'));
-    if (messageHandler != null) messageHandler(ConnectionState.connecting);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.connecting);
   }
 
   @override
@@ -63,15 +63,15 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   Future<dynamic> _handleConnectorMessage(dynamic message) async {
     print('_handleConnectorMessage $message');
     if (message['ConnectionState'] != null) {
-      var connectionState = ConnectionState.parse(message['ConnectionState']);
-      if (connectionState == ConnectionState.connected) {
+      var connectionState = NotepadConnectionState.parse(message['ConnectionState']);
+      if (connectionState == NotepadConnectionState.connected) {
         _method.invokeMethod('discoverServices').then((_) => print('discoverServices invokeMethod success'));
       } else {
         if (messageHandler != null) messageHandler(connectionState);
       }
     } else if (message['ServiceState'] != null) {
       if (message['ServiceState'] == 'discovered')
-        if (messageHandler != null) messageHandler(ConnectionState.connected);
+        if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
     }
   }
 
