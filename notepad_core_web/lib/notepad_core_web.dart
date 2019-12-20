@@ -87,8 +87,11 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  void readValue(Tuple2<String, String> serviceCharacteristic) {
-    // TODO: implement readValue
+  void readValue(Tuple2<String, String> serviceCharacteristic) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    characteristic.readValue().then((value) {
+      _characteristicValueController.add(Tuple2(serviceCharacteristic.item2, value));
+    });
   }
 
   @override
