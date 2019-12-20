@@ -57,10 +57,60 @@ class WoodemiClient extends NotepadClient {
   ];
 
   @override
-  Future<void> completeConnection() async {
-    await notepadType.sendRequestAsync('Command', commandRequestCharacteristic, Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
-    await notepadType.receiveResponseAsync('Command', commandResponseCharacteristic, (data) => data.first == 0x02);
+  Future<void> completeConnection(void awaitConfirm(bool)) async {
+    var accessResult = await _checkAccess(authToken ?? defaultAuthToken, 10, awaitConfirm);
+    switch(accessResult) {
+      case AccessResult.Denied:
+        throw AccessException.Denied;
+      case AccessResult.Unconfirmed:
+        throw AccessException.Unconfirmed;
+      default:
+        break;
+    }
   }
+
+  //#region authorization
+  Future<AccessResult> _checkAccess(Uint8List authToken, int seconds, void awaitConfirm(bool)) async {
+    var command = WoodemiCommand(
+      request: Uint8List.fromList([0x01, seconds] + authToken),
+      intercept: (data) => data.first == 0x02,
+      handle: (data) => data[1],
+    );
+    var response = await notepadType.executeCommand(command);
+    switch(response) {
+      case 0x00:
+        return AccessResult.Denied;
+      case 0x01:
+        awaitConfirm(true);
+        var confirm = await notepadType.receiveResponseAsync('Confirm',
+            commandResponseCharacteristic, (value) => value.first == 0x03);
+        return confirm[1] == 0x00 ? AccessResult.Confirmed : AccessResult.Unconfirmed;
+      case 0x02:
+        return AccessResult.Approved;
+      default:
+        throw Exception('Unknown error');
+    }
+  }
+
+  @override
+  void setAuthToken(Uint8List authToken) {
+    var newAuthToken = authToken ?? defaultAuthToken;
+    assert(newAuthToken.length == 4, 'authToken should be 4 in length !');
+    super.setAuthToken(newAuthToken);
+  }
+
+  Future<void> claimAuth() => _sendAuthRequest(authToken, true);
+
+  Future<void> disclaimAuth() => _sendAuthRequest(authToken, false);
+
+  Future<void> _sendAuthRequest(Uint8List authToken, bool claim) =>
+      notepadType.executeCommand(WoodemiCommand(
+        request: Uint8List.fromList(
+          [0x04, claim ? 0x00 : 0x01] + authToken,
+        ),
+      ));
+
+  //#endregion
 
   //#region Device Info
   @override

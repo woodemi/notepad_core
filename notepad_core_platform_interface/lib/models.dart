@@ -7,6 +7,7 @@ class NotepadCoreMessage {
 class NotepadConnectionState extends NotepadCoreMessage {
   static const disconnected = NotepadConnectionState._('disconnected');
   static const connecting = NotepadConnectionState._('connecting');
+  static const awaitConfirm = NotepadConnectionState._('awaitConfirm');
   static const connected = NotepadConnectionState._('connected');
 
   final String value;

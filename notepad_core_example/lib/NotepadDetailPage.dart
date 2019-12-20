@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
 
@@ -54,7 +56,7 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> {
               RaisedButton(
                 child: Text('connect'),
                 onPressed: () {
-                  notepadConnector.connect(widget.scanResult);
+                  notepadConnector.connect(widget.scanResult, Uint8List.fromList([0x00, 0x00, 0x00, 0x02]));
                 },
               ),
               RaisedButton(
@@ -65,9 +67,40 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> {
               ),
             ],
           ),
+          _buildAuthorizationButtons(),
           ..._buildDeviceInfoButtons(),
         ],
       ),
+    );
+  }
+
+  Widget _buildAuthorizationButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RaisedButton(
+          child: Text('claimAuth'),
+          onPressed: () async {
+            if (_notepadClient != null) {
+              await _notepadClient.claimAuth();
+              _toast('claimAuth success');
+            } else {
+              _toast('_notepadClient = null');
+            }
+          },
+        ),
+        RaisedButton(
+          child: Text('disclaimAuth'),
+          onPressed: () async {
+            if (_notepadClient != null) {
+              await _notepadClient.disclaimAuth();
+              _toast('disclaimAuth success');
+            } else {
+              _toast('_notepadClient = null');
+            }
+          },
+        ),
+      ],
     );
   }
 
