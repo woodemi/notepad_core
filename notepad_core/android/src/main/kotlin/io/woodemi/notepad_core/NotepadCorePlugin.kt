@@ -83,6 +83,9 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         Log.d(TAG, "$this onMethodCall " + call.method)
         when (call.method) {
+            "isBluetoothAvailable" -> {
+                result.success(bluetoothManager.adapter.isEnabled)
+            }
             "startScan" -> {
                 bluetoothManager.adapter.bluetoothLeScanner?.startScan(scanCallback)
                 result.success(null)

@@ -18,6 +18,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     bluetooth.addEventListener(Bluetooth.availabilityEvent, _onAvailabilityChanged);
   }
 
+  @override
+  Future<bool> isBluetoothAvailable() => bluetooth.getAvailability();
+
   void _onAvailabilityChanged(Event event) async {
     bool available = getProperty(event, 'value');
     print('_onAvailabilityChanged $event, $available');
