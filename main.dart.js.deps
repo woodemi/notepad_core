@@ -1,8 +1,12 @@
 file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/Notepad.dart
+file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/NotepadClient.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/NotepadConnector.dart
+file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/NotepadType.dart
+file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/models.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/notepad_core.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/utils.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/woodemi/Woodemi.dart
+file:///home/runner/work/notepad_core/notepad_core/notepad_core/lib/woodemi/WoodemiClient.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/.dart_tool/flutter_build/de3c22bf24408e50b7c60423d0cf7fe4/main.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/.packages
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/MobileApp.dart
@@ -11,6 +15,7 @@ file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/WebA
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/generated_plugin_registrant.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/main.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/method_channel_notepad_core.dart
+file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/models.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/notepad_core_platform_interface.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_web/lib/js_facade.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_web/lib/notepad_core_js.dart
