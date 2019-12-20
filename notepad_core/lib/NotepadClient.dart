@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
+import 'Notepad.dart';
 import 'models.dart';
 import 'NotepadType.dart';
 import 'utils.dart';
@@ -20,6 +21,7 @@ abstract class NotepadClient {
 
   static List<String> get optionalServices {
     return [
+      SERV__BATTERY,
       ...WoodemiClient.optionalServices,
     ];
   }

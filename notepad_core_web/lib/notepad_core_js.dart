@@ -89,6 +89,11 @@ class BluetoothRemoteGATTCharacteristic extends EventTargetDelegate {
 
   Uint8List get value => (getProperty('value') as ByteData).buffer.asUint8List();
 
+  Future<Uint8List> readValue() {
+    var promise = callMethod('readValue', null);
+    return promiseToFuture(promise).then((dataView) => (dataView as ByteData).buffer.asUint8List());
+  }
+
   Future<dynamic> writeValue(Uint8List bytes) {
     var promise = callMethod('writeValue', [bytes]);
     return promiseToFuture(promise);

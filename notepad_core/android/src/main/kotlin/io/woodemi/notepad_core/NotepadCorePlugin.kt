@@ -90,6 +90,14 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
                 connectGatt?.setNotifiable(service to characteristic, bleInputProperty)
                 result.success(null)
             }
+            "readValue" -> {
+                val service = call.argument<String>("service")!!
+                val characteristic = call.argument<String>("characteristic")!!
+                connectGatt?.getCharacteristic(service to characteristic)?.let {
+                    connectGatt?.readCharacteristic(it)
+                }
+                result.success(null)
+            }
             "writeValue" -> {
                 val service = call.argument<String>("service")!!
                 val characteristic = call.argument<String>("characteristic")!!
@@ -191,6 +199,19 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
             }
             Log.v(TAG, "onDescriptorWrite ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
             mainThreadHandler.post { clientMessage.send(mapOf("characteristicConfig" to descriptor.characteristic.uuid.toString())) }
+        }
+
+        override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onCharacteristicRead ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
+            val characteristicValue = mapOf(
+                    "characteristic" to characteristic.uuid.toString(),
+                    "value" to characteristic.value
+            )
+            mainThreadHandler.post { clientMessage.send(mapOf("characteristicValue" to characteristicValue)) }
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
