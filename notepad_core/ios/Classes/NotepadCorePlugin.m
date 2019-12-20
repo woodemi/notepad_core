@@ -1,7 +1,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "NotepadCorePlugin.h"
 
-NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
+NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 
 # pragma CBUUID+Extensions
 
@@ -10,7 +10,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
 
 @implementation CBUUID (Extensions)
 - (NSString *)uuidString {
-    return [self.UUIDString lowercaseString];
+    return self.UUIDString.lowercaseString;
 }
 @end
 
@@ -101,6 +101,11 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805F9B34FB";
         NSString *characteristic = call.arguments[@"characteristic"];
         NSString *bleInputProperty = call.arguments[@"bleInputProperty"];
         [_peripheral setNotifiable:bleInputProperty forCharacteristic:characteristic ofService:service];
+        result(nil);
+    } else if ([call.method isEqualToString:@"readValue"]) {
+        NSString *service = call.arguments[@"service"];
+        NSString *characteristic = call.arguments[@"characteristic"];
+        [_peripheral readValueForCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]];
         result(nil);
     } else if ([call.method isEqualToString:@"writeValue"]) {
         NSString *service = call.arguments[@"service"];

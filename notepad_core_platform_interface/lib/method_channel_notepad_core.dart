@@ -91,7 +91,10 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
 
   @override
   void readValue(Tuple2<String, String> serviceCharacteristic) {
-    // TODO: implement readValue
+    _method.invokeListMethod('readValue', {
+      'service': serviceCharacteristic.item1,
+      'characteristic': serviceCharacteristic.item2,
+    }).then((_) => print('readValue invokeMethod success'));
   }
 
   @override
