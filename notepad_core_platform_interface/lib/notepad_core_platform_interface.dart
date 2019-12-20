@@ -1,10 +1,14 @@
 library notepad_core_platform_interface;
 
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'method_channel_notepad_core.dart';
+import 'models.dart';
+
+export 'models.dart';
 
 /// FIXME `import 'package:tuple/tuple.dart';` fails
 class Tuple2<T1, T2> {
@@ -16,12 +20,6 @@ class Tuple2<T1, T2> {
 
   /// Creates a new tuple value with the specified items.
   const Tuple2(this.item1, this.item2);
-}
-
-typedef MessageHandler = Future<dynamic> Function(NotepadCoreMessage message);
-
-class NotepadCoreMessage {
-  const NotepadCoreMessage._();
 }
 
 abstract class NotepadCorePlatform extends PlatformInterface {
@@ -56,26 +54,9 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic);
 
+  void readValue(Tuple2<String, String> serviceCharacteristic);
+
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value);
-}
 
-class ConnectionState extends NotepadCoreMessage {
-  static const disconnected = ConnectionState._('disconnected');
-  static const connecting = ConnectionState._('connecting');
-  static const connected = ConnectionState._('connected');
-
-  final String value;
-
-  const ConnectionState._(this.value) : super._();
-
-  static ConnectionState parse(String value) {
-    if (value == disconnected.value) {
-      return disconnected;
-    } else if (value == connecting.value) {
-      return connecting;
-    } else if (value == connected.value) {
-      return connected;
-    }
-    throw ArgumentError.value(value);
-  }
+  Stream<Tuple2<String, Uint8List>> get inputValueStream;
 }

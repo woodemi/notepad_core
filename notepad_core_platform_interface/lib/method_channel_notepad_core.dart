@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
 
@@ -49,7 +50,7 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     _method.invokeMethod('connect', {
       'deviceId': scanResult.deviceId,
     }).then((_) => print('connect invokeMethod success'));
-    if (messageHandler != null) messageHandler(ConnectionState.connecting);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.connecting);
   }
 
   @override
@@ -62,15 +63,15 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   Future<dynamic> _handleConnectorMessage(dynamic message) async {
     print('_handleConnectorMessage $message');
     if (message['ConnectionState'] != null) {
-      var connectionState = ConnectionState.parse(message['ConnectionState']);
-      if (connectionState == ConnectionState.connected) {
+      var connectionState = NotepadConnectionState.parse(message['ConnectionState']);
+      if (connectionState == NotepadConnectionState.connected) {
         _method.invokeMethod('discoverServices').then((_) => print('discoverServices invokeMethod success'));
       } else {
         if (messageHandler != null) messageHandler(connectionState);
       }
     } else if (message['ServiceState'] != null) {
       if (message['ServiceState'] == 'discovered')
-        if (messageHandler != null) messageHandler(ConnectionState.connected);
+        if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
     }
   }
 
@@ -89,6 +90,14 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
+  void readValue(Tuple2<String, String> serviceCharacteristic) {
+    _method.invokeListMethod('readValue', {
+      'service': serviceCharacteristic.item1,
+      'characteristic': serviceCharacteristic.item2,
+    }).then((_) => print('readValue invokeMethod success'));
+  }
+
+  @override
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
     _method.invokeMethod('writeValue', {
       'service': serviceCharacteristic.item1,
@@ -102,6 +111,12 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     });
   }
 
+  // FIXME Close
+  final _characteristicValueController = StreamController<Tuple2<String, Uint8List>>.broadcast();
+
+  @override
+  Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
+
   Future<dynamic> _handleClientMessage(dynamic message) {
     print('_handleClientMessage $message');
     if (message['characteristicConfig'] != null) {
@@ -109,7 +124,7 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     } else if (message['characteristicValue'] != null) {
       var characteristicValue = message['characteristicValue'];
       var value = Uint8List.fromList(characteristicValue['value']); // In case of _Uint8ArrayView
-      print('characteristicValue ${characteristicValue['characteristic']}, ${hex.encode(value)}');
+      _characteristicValueController.add(Tuple2(characteristicValue['characteristic'], value));
     }
   }
 }

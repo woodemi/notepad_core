@@ -1,28 +1,45 @@
 import 'dart:typed_data';
 
-import 'utils.dart';
-import 'woodemi/Woodemi.dart';
+import 'package:flutter/foundation.dart';
 
-bool support(NotepadScanResult scanResult) {
-  return startWith(scanResult.manufacturerData, WOODEMI_PREFIX);
+const GSS_SUFFIX = "0000-1000-8000-00805f9b34fb";
+const CODE__SERV_BATTERY = "180f";
+const CODE__CHAR_BATTERY_LEVEL = "2a19";
+
+const SERV__BATTERY = "0000$CODE__SERV_BATTERY-$GSS_SUFFIX";
+const CHAR__BATTERY_LEVEL = "0000$CODE__CHAR_BATTERY_LEVEL-$GSS_SUFFIX";
+
+typedef Predicate = bool Function(Uint8List data);
+
+typedef Handle<T> = T Function(Uint8List data);
+
+class NotepadCommand<T> {
+  final Uint8List request;
+  final Predicate intercept;
+  final Handle<T> handle;
+
+  NotepadCommand({
+    @required this.request,
+    @required this.intercept,
+    @required this.handle,
+  })
+      : assert(request != null),
+        assert(intercept != null),
+        assert(handle != null);
 }
 
-class NotepadScanResult {
-  String name;
-  String deviceId;
-  Uint8List manufacturerData;
-  int rssi;
+enum AccessResult {
+  Denied,      // Device claimed by other user
+  Confirmed,   // Access confirmed, indicating device not claimed by anyone
+  Unconfirmed, // Access unconfirmed, as user doesn't confirm before timeout
+  Approved     // Device claimed by this user
+}
 
-  NotepadScanResult.fromMap(map)
-      : name = map['name'],
-        deviceId = map['deviceId'],
-        manufacturerData = map['manufacturerData'],
-        rssi = map['rssi'];
+class AccessException implements Exception {
+  static final Denied = AccessException._('Notepad claimed by other user');
+  static final Unconfirmed = AccessException._('User does not confirm before timeout');
 
-  Map toMap() => {
-        'name': name,
-        'deviceId': deviceId,
-        'manufacturerData': manufacturerData,
-        'rssi': rssi,
-      };
+  final String message;
+
+  AccessException._(this.message);
 }

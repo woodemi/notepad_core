@@ -1,7 +1,7 @@
-import 'dart:html';
+import 'dart:async';
+import 'dart:html' show Event;
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
@@ -49,13 +49,13 @@ class NotepadCorePlugin extends NotepadCorePlatform {
       print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
       _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
 
-      if (messageHandler != null) messageHandler(ConnectionState.connected);
+      if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
     }, onError: (error) {
       print('onConnectFail $error');
-      if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+      if (messageHandler != null) messageHandler(NotepadConnectionState.disconnected);
     });
 
-    if (messageHandler != null) messageHandler(ConnectionState.connecting);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.connecting);
   }
 
   @override
@@ -76,7 +76,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
     _connectGatt = null;
  
-    if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.disconnected);
   }
 
   @override
@@ -87,15 +87,28 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
+  void readValue(Tuple2<String, String> serviceCharacteristic) async {
+    var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
+    characteristic.readValue().then((value) {
+      _characteristicValueController.add(Tuple2(serviceCharacteristic.item2, value));
+    });
+  }
+
+  @override
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     await characteristic.writeValue(value);
   }
 
+  // FIXME Close
+  final _characteristicValueController = StreamController<Tuple2<String, Uint8List>>.broadcast();
+
+  @override
+  Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
+
   void _onCharacteristicValueChange(Event event) {
     var characteristic = BluetoothRemoteGATTCharacteristic(event.target);
-    var bytes = characteristic.value;
-    print('_onCharacteristicValueChange ${characteristic.uuid} ${hex.encode(bytes)}');
+    _characteristicValueController.add(Tuple2(characteristic.uuid, characteristic.value));
   }
 }
 
