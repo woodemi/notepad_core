@@ -1,3 +1,23 @@
+## [1.1.0] - 2019-12-20
+
+### NotepadConnector
+
+- Add `connectionChangeHandler` for connection state change event
+
+### NotepadClient
+
+#### Authorization
+
+- `connect` with authToken
+- `claimAuth`, `disclaimAuth`
+
+#### Device info
+- `getDeviceSize`
+- `getDeviceName`, `setDeviceName`
+- `getBatteryInfo`
+- `getDeviceDate`, `setDeviceDate`
+- `getAutoLockTime`, `setAutoLockTime`
+
 ## [1.0.0] - 2019-12-19
 
 ### NotepadConnector

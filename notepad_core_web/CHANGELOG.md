@@ -1,3 +1,12 @@
+## [1.1.0] - 2019-12-20
+
+### NotepadCorePlatform
+
+#### Operate service/characteristic
+
+- Implement `readValue`
+- Implement `inputValueStream`
+
 ## [1.0.0] - 2019-12-19
 
 ### NotepadCorePlugin

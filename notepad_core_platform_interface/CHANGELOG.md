@@ -1,3 +1,13 @@
+## [1.1.0] - 2019-12-20
+
+### NotepadCorePlatform
+
+#### Operate service/characteristic
+
+- `readValue`
+- `inputValueStream`
+- Add `NotapadConnectionState.awaitConfirm`
+
 ## [1.0.0] - 2019-12-19
 
 ### NotepadCorePlatform
