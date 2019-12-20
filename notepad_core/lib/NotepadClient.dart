@@ -1,6 +1,7 @@
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'models.dart';
+import 'NotepadType.dart';
 import 'utils.dart';
 import 'woodemi/WoodemiClient.dart';
 
@@ -41,6 +42,8 @@ abstract class NotepadClient {
   List<Tuple2<String, String>> get inputIndicationCharacteristics;
 
   List<Tuple2<String, String>> get inputNotificationCharacteristics;
+
+  NotepadType notepadType;
 
   Future<void> completeConnection();
 }

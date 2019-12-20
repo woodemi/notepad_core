@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import '../NotepadClient.dart';
-import '../NotepadConnector.dart';
 import 'Woodemi.dart';
 
 class WoodemiClient extends NotepadClient {
@@ -55,7 +54,7 @@ class WoodemiClient extends NotepadClient {
 
   @override
   Future<void> completeConnection() async {
-    await notepadConnector.sendRequestAsync('Command', commandRequestCharacteristic, Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
-    await notepadConnector.receiveResponseAsync('Command', commandResponseCharacteristic, (data) => data.first == 0x02);
+    await notepadType.sendRequestAsync('Command', commandRequestCharacteristic, Uint8List.fromList([0x01, 0x0A, 0x00, 0x00, 0x00, 0x01]));
+    await notepadType.receiveResponseAsync('Command', commandResponseCharacteristic, (data) => data.first == 0x02);
   }
 }
