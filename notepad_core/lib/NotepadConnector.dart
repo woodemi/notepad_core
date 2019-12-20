@@ -1,14 +1,10 @@
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
-import 'package:convert/convert.dart';
 
 import 'models.dart';
-import 'Notepad.dart';
 import 'NotepadClient.dart';
-
-const GSS_SUFFIX = '0000-1000-8000-00805f9b34fb';
+import 'NotepadType.dart';
 
 final notepadConnector = NotepadConnector._();
 
@@ -46,14 +42,17 @@ class NotepadConnector {
   }
 
   NotepadClient _notepadClient;
+  NotepadType _notepadType;
 
   void connect(scanResult) {
     _notepadClient = NotepadClient.create(scanResult);
+    _notepadType = NotepadType(_notepadClient);
     NotepadCorePlatform.instance.connect(scanResult);
   }
 
   void disconnect() {
     _notepadClient = null;
+    _notepadType = null;
     NotepadCorePlatform.instance.disconnect();
   }
 
@@ -62,38 +61,16 @@ class NotepadConnector {
     if (message is ConnectionState) {
       switch(message) {
         case ConnectionState.connected:
-          await configCharacteristics();
+          await _notepadType.configCharacteristics();
           await _notepadClient.completeConnection();
           break;
         case ConnectionState.disconnected:
           _notepadClient = null;
+          _notepadType = null;
           break;
         default:
           print('ConnectionState ${message.value}');
       }
     }
-  }
-
-  Future<void> configCharacteristics() async {
-    for (var serviceCharacteristic in _notepadClient.inputIndicationCharacteristics) {
-      print('configInputCharacteristic $serviceCharacteristic, indication');
-      await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic);
-    }
-  }
-
-  Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
-    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request);
-    print('on${messageHead}Send: ${hex.encode(request)}');
-  }
-
-  Stream<Uint8List> receiveValue(Tuple2<String, String> serviceCharacteristic) =>
-      NotepadCorePlatform.instance.inputValueStream.where((cv) {
-        return cv.item1 == serviceCharacteristic.item2 || '0000${cv.item1}-$GSS_SUFFIX' == serviceCharacteristic.item2;
-      }).map((cv) => cv.item2);
-
-  Future<Uint8List> receiveResponseAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Predicate intercept) async {
-    var response = await receiveValue(serviceCharacteristic).firstWhere(intercept);
-    print('on${messageHead}Receive: ${hex.encode(response)}');
-    return response;
   }
 }
