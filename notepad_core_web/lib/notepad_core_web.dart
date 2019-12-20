@@ -50,13 +50,13 @@ class NotepadCorePlugin extends NotepadCorePlatform {
       print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
       _connectGatt.device.addEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
 
-      if (messageHandler != null) messageHandler(ConnectionState.connected);
+      if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
     }, onError: (error) {
       print('onConnectFail $error');
-      if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+      if (messageHandler != null) messageHandler(NotepadConnectionState.disconnected);
     });
 
-    if (messageHandler != null) messageHandler(ConnectionState.connecting);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.connecting);
   }
 
   @override
@@ -77,7 +77,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     _connectGatt?.device?.removeEventListener(BluetoothDevice.disconnectEvent, _handleDisconnectEvent);
     _connectGatt = null;
  
-    if (messageHandler != null) messageHandler(ConnectionState.disconnected);
+    if (messageHandler != null) messageHandler(NotepadConnectionState.disconnected);
   }
 
   @override

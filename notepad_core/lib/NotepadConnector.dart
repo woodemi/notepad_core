@@ -6,6 +6,8 @@ import 'models.dart';
 import 'NotepadClient.dart';
 import 'NotepadType.dart';
 
+typedef ConnectionChangeHandler = void Function(NotepadClient client, NotepadConnectionState state);
+
 final notepadConnector = NotepadConnector._();
 
 final _tag = 'NotepadConnector';
@@ -56,21 +58,19 @@ class NotepadConnector {
     NotepadCorePlatform.instance.disconnect();
   }
 
+  ConnectionChangeHandler connectionChangeHandler;
+
   Future<void> _handleMessage(NotepadCoreMessage message) async {
-    print('$_tag handleMessage $message');
-    if (message is ConnectionState) {
-      switch(message) {
-        case ConnectionState.connected:
-          await _notepadType.configCharacteristics();
-          await _notepadClient.completeConnection();
-          break;
-        case ConnectionState.disconnected:
-          _notepadClient = null;
-          _notepadType = null;
-          break;
-        default:
-          print('ConnectionState ${message.value}');
+    print('$_tag _handleMessage $message');
+    if (message is NotepadConnectionState) {
+      if (message == NotepadConnectionState.connected) {
+        await _notepadType.configCharacteristics();
+        await _notepadClient.completeConnection();
+      } else if (message == NotepadConnectionState.disconnected) {
+        _notepadClient = null;
+        _notepadType = null;
       }
+      if (connectionChangeHandler != null) connectionChangeHandler(_notepadClient, message);
     }
   }
 }
