@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
@@ -47,7 +48,21 @@ abstract class NotepadClient {
 
   NotepadType notepadType;
 
-  Future<void> completeConnection();
+  Future<void> completeConnection(void awaitConfirm(bool));
+
+  //#region authorization
+  Uint8List _authToken;
+
+  Uint8List get authToken => _authToken;
+
+  void setAuthToken(Uint8List authToken) {
+    _authToken = authToken;
+  }
+
+  Future<void> claimAuth();
+
+  Future<void> disclaimAuth();
+  //#endregion
 
   //#region device info
   Size getDeviceSize();

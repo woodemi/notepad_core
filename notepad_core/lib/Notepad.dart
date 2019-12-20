@@ -27,3 +27,19 @@ class NotepadCommand<T> {
         assert(intercept != null),
         assert(handle != null);
 }
+
+enum AccessResult {
+  Denied,      // Device claimed by other user
+  Confirmed,   // Access confirmed, indicating device not claimed by anyone
+  Unconfirmed, // Access unconfirmed, as user doesn't confirm before timeout
+  Approved     // Device claimed by this user
+}
+
+class AccessException implements Exception {
+  static final Denied = AccessException._('Notepad claimed by other user');
+  static final Unconfirmed = AccessException._('User does not confirm before timeout');
+
+  final String message;
+
+  AccessException._(this.message);
+}
