@@ -37,4 +37,16 @@ class NotepadType {
     print('on${messageHead}Receive: ${hex.encode(response)}');
     return response;
   }
+
+  Future<T> fetchProperty<T>(Tuple2<String, String> serviceCharacteristic, Handle<T> handle) async {
+    NotepadCorePlatform.instance.readValue(serviceCharacteristic);
+    var value = await receiveResponseAsync('Property', serviceCharacteristic, (value) => true);
+    return handle(value);
+  }
+
+  Future<T> executeCommand<T>(NotepadCommand<T> command) async {
+    await sendRequestAsync('Command', _notepadClient.commandRequestCharacteristic, command.request);
+    var response = await receiveResponseAsync('Command', _notepadClient.commandResponseCharacteristic, command.intercept);
+    return command.handle(response);
+  }
 }

@@ -19,3 +19,10 @@ class NotepadScanResult {
         'rssi': rssi,
       };
 }
+
+class BatteryInfo {
+  final int percent;
+  final bool charging;
+
+  BatteryInfo(this.percent, this.charging);
+}
