@@ -90,6 +90,11 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
+  void readValue(Tuple2<String, String> serviceCharacteristic) {
+    // TODO: implement readValue
+  }
+
+  @override
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
     _method.invokeMethod('writeValue', {
       'service': serviceCharacteristic.item1,

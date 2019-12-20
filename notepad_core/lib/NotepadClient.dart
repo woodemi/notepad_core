@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'models.dart';
@@ -46,4 +48,22 @@ abstract class NotepadClient {
   NotepadType notepadType;
 
   Future<void> completeConnection();
+
+  //#region device info
+  Size getDeviceSize();
+
+  Future<String> getDeviceName();
+
+  Future<void> setDeviceName(String name);
+
+  Future<BatteryInfo> getBatteryInfo();
+
+  Future<int> getDeviceDate();
+
+  Future<void> setDeviceDate(int date);
+
+  Future<int> getAutoLockTime(); // minute
+
+  Future<void> setAutoLockTime(int time); // minute
+  //#endregion
 }
