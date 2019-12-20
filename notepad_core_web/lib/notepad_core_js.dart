@@ -9,8 +9,25 @@ import 'package:js/js.dart';
 import 'js_facade.dart';
 
 @JS('navigator.bluetooth')
-class Bluetooth {
-  external static Promise<dynamic> requestDevice(ScanOptions options);
+external EventTarget get _bluetooth;
+
+final Bluetooth bluetooth = Bluetooth(_bluetooth);
+
+class Bluetooth extends EventTargetDelegate {
+  /// Event type should be [const]
+  static const availabilityEvent = 'availabilitychanged';
+
+  Bluetooth(EventTarget delegate) : super(delegate);
+
+  Future<bool> getAvailability() {
+    var promise = callMethod('getAvailability', null);
+    return promiseToFuture(promise);
+  }
+
+  Future<BluetoothDevice> requestDevice(ScanOptions options) {
+    var promise = callMethod('requestDevice', [options]);
+    return promiseToFuture(promise).then((onValue) => BluetoothDevice(onValue));
+  }
 }
 
 @JS()
