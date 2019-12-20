@@ -4,9 +4,9 @@ import 'dart:typed_data';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
+import 'package:js/js_util.dart' show getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
-import 'js_facade.dart';
 import 'notepad_core_js.dart';
 
 class NotepadCorePlugin extends NotepadCorePlatform {
@@ -14,15 +14,23 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     NotepadCorePlatform.instance = NotepadCorePlugin();
   }
 
+  NotepadCorePlugin() {
+    bluetooth.addEventListener(Bluetooth.availabilityEvent, _onAvailabilityChanged);
+  }
+
+  void _onAvailabilityChanged(Event event) async {
+    bool available = getProperty(event, 'value');
+    print('_onAvailabilityChanged $event, $available');
+  }
+
   @override
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   }) async {
-    var requestDevice = Bluetooth.requestDevice(ScanOptions(
+    return await bluetooth.requestDevice(ScanOptions(
       optionalServices: optionalServices.map(getServiceUUID).toList(),
       acceptAllDevices: true,
     ));
-    return BluetoothDevice(await promiseToFuture(requestDevice));
   }
 
   @override
