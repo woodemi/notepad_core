@@ -8,9 +8,6 @@ import '../Notepad.dart';
 import '../NotepadClient.dart';
 import '../models.dart';
 import 'Woodemi.dart';
-import 'Woodemi.dart';
-import 'Woodemi.dart';
-import 'Woodemi.dart';
 
 class WoodemiClient extends NotepadClient {
   static Uint8List get prefix => Uint8List.fromList([0x57, 0x44, 0x4d]); // 'WDM'
