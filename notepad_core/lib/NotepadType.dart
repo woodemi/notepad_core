@@ -53,4 +53,9 @@ class NotepadType {
     var response = await receiveResponseAsync('Command', _notepadClient.commandResponseCharacteristic, command.intercept);
     return command.handle(response);
   }
+
+  Stream<Uint8List> receiveSyncInput() => receiveValue(_notepadClient.syncInputCharacteristic).map((value) {
+    print('onSyncInputReceive ${hex.encode(value)}');
+    return value;
+  });
 }
