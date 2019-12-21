@@ -4,6 +4,24 @@ class NotepadCoreMessage {
   const NotepadCoreMessage._();
 }
 
+class BluetoothState extends NotepadCoreMessage {
+  static const available = BluetoothState._('available');
+  static const unavailable = BluetoothState._('unavailable');
+
+  final String value;
+
+  const BluetoothState._(this.value) : super._();
+
+  static BluetoothState parse(String value) {
+    if (value == available.value) {
+      return available;
+    } else if (value == unavailable.value) {
+      return unavailable;
+    }
+    throw ArgumentError.value(value);
+  }
+}
+
 class NotepadConnectionState extends NotepadCoreMessage {
   static const disconnected = NotepadConnectionState._('disconnected');
   static const connecting = NotepadConnectionState._('connecting');

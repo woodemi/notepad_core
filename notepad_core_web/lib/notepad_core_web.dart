@@ -23,7 +23,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
 
   void _onAvailabilityChanged(Event event) async {
     bool available = getProperty(event, 'value');
-    print('_onAvailabilityChanged $event, $available');
+    var bluetoothState = available ? BluetoothState.available : BluetoothState.unavailable;
+    print('_onAvailabilityChanged $event, $bluetoothState');
+    if (messageHandler != null) messageHandler(bluetoothState);
   }
 
   @override

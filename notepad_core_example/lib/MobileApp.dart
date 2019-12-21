@@ -19,12 +19,18 @@ class _MobileHomePage extends StatefulWidget {
   State<StatefulWidget> createState() => _MobileHomePageState();
 }
 
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+_toast(String msg) => _scaffoldKey.currentState
+  .showSnackBar(SnackBar(content: Text(msg), duration: Duration(seconds: 2)));
+
 class _MobileHomePageState extends State<_MobileHomePage> {
   StreamSubscription<NotepadScanResult> _subscription;
 
   @override
   void initState() {
     super.initState();
+    notepadConnector.bluetoothChangeHandler = _handleBluetoothChange;
     _subscription = notepadConnector.scanResultStream.listen((result) {
       if (!_scanResults.any((r) => r.deviceId == result.deviceId)) {
         setState(() => _scanResults.add(result));
@@ -35,12 +41,18 @@ class _MobileHomePageState extends State<_MobileHomePage> {
   @override
   void dispose() {
     super.dispose();
+    notepadConnector.bluetoothChangeHandler = null;
     _subscription?.cancel();
+  }
+
+  void _handleBluetoothChange(BluetoothState state) {
+    _toast('_handleBluetoothChange ${state.value}');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Plugin example app'),
       ),
@@ -50,7 +62,7 @@ class _MobileHomePageState extends State<_MobileHomePage> {
             future: notepadConnector.isBluetoothAvailable(),
             builder: (context, snapshot) {
               var available = snapshot.data?.toString() ?? '...';
-              return Text('Bluetooth: $available');
+              return Text('Bluetooth init: $available');
             },
           ),
           _buildButtons(),
