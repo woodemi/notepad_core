@@ -1,8 +1,7 @@
 name: notepad_core_web
 description: A new flutter plugin project.
 version: 1.2.1
-author:
-homepage:
+homepage: http://woodemi.com
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -12,8 +11,7 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  notepad_core_platform_interface:
-    path: ../notepad_core_platform_interface
+  notepad_core_platform_interface: ^1.2.0
   js: ^0.6.1+1
 
 dev_dependencies:
