@@ -74,8 +74,12 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
             val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
             Log.d(TAG, "bluetoothReceiver onReceive $state")
             when (state) {
-                BluetoothAdapter.STATE_OFF -> Log.d(TAG, "onAvailableChanged false")
-                BluetoothAdapter.STATE_ON -> Log.d(TAG, "onAvailableChanged true")
+                BluetoothAdapter.STATE_OFF -> {
+                    mainThreadHandler.post { connectorMessage.send(mapOf("BluetoothState" to "unavailable")) }
+                }
+                BluetoothAdapter.STATE_ON -> {
+                    mainThreadHandler.post { connectorMessage.send(mapOf("BluetoothState" to "available")) }
+                }
             }
         }
     }

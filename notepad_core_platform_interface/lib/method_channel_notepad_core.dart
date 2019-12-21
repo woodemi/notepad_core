@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
 
@@ -65,7 +64,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
 
   Future<dynamic> _handleConnectorMessage(dynamic message) async {
     print('_handleConnectorMessage $message');
-    if (message['ConnectionState'] != null) {
+    if (message['BluetoothState'] != null) {
+      if (messageHandler != null) messageHandler(BluetoothState.parse(message['BluetoothState']));
+    } else if (message['ConnectionState'] != null) {
       var connectionState = NotepadConnectionState.parse(message['ConnectionState']);
       if (connectionState == NotepadConnectionState.connected) {
         _method.invokeMethod('discoverServices').then((_) => print('discoverServices invokeMethod success'));

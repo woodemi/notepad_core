@@ -127,6 +127,15 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     NSLog(@"centralManagerDidUpdateState %ld", (long) central.state);
+    switch (central.state) {
+        case CBManagerStatePoweredOff:
+            [_connectorMessage sendMessage:@{@"BluetoothState": @"unavailable"}];
+            break;
+        case CBManagerStatePoweredOn:
+            [_connectorMessage sendMessage:@{@"BluetoothState": @"available"}];
+            break;
+    }
+
 }
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *, id> *)advertisementData RSSI:(NSNumber *)RSSI {
