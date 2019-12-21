@@ -14,12 +14,6 @@ file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/Note
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/WebApp.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/generated_plugin_registrant.dart
 file:///home/runner/work/notepad_core/notepad_core/notepad_core_example/lib/main.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/method_channel_notepad_core.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/models.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_platform_interface/lib/notepad_core_platform_interface.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_web/lib/js_facade.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_web/lib/notepad_core_js.dart
-file:///home/runner/work/notepad_core/notepad_core/notepad_core_web/lib/notepad_core_web.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/charcode-1.1.2/lib/ascii.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/collection-1.14.11/lib/collection.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/collection-1.14.11/lib/src/algorithms.dart
@@ -56,6 +50,12 @@ file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/js-0.6.1+1/lib/js.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/js-0.6.1+1/lib/js_util.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/meta-1.1.8/lib/meta.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_platform_interface-1.2.0/lib/method_channel_notepad_core.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_platform_interface-1.2.0/lib/models.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_platform_interface-1.2.0/lib/notepad_core_platform_interface.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_web-1.2.1/lib/js_facade.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_web-1.2.1/lib/notepad_core_js.dart
+file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/notepad_core_web-1.2.1/lib/notepad_core_web.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/plugin_platform_interface-1.0.1/lib/plugin_platform_interface.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/typed_data-1.1.6/lib/typed_buffers.dart
 file:///opt/hostedtoolcache/flutter/1.12.13-hotfix.6-beta/x64/.pub-cache/hosted/pub.flutter-io.cn/typed_data-1.1.6/lib/typed_data.dart
