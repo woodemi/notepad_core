@@ -8,6 +8,8 @@ import 'models.dart';
 import 'NotepadClient.dart';
 import 'NotepadType.dart';
 
+typedef BluetoothChangeHandler = void Function(BluetoothState state);
+
 typedef ConnectionChangeHandler = void Function(NotepadClient client, NotepadConnectionState state);
 
 final notepadConnector = NotepadConnector._();
@@ -18,6 +20,8 @@ class NotepadConnector {
   NotepadConnector._() {
     NotepadCorePlatform.instance.messageHandler = _handleMessage;
   }
+
+  Future<bool> isBluetoothAvailable() => NotepadCorePlatform.instance.isBluetoothAvailable();
 
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
@@ -60,12 +64,16 @@ class NotepadConnector {
     NotepadCorePlatform.instance.disconnect();
   }
 
+  BluetoothChangeHandler bluetoothChangeHandler;
+
   ConnectionChangeHandler connectionChangeHandler;
 
   Future<void> _handleMessage(NotepadCoreMessage message) async {
     print('$_tag _handleMessage $message');
     if (message is NotepadConnectionState) {
       await _handleConnectionState(message);
+    } else if (message is BluetoothState) {
+      if (bluetoothChangeHandler != null) bluetoothChangeHandler(message);
     }
   }
 

@@ -3,6 +3,7 @@ library notepad_core_platform_interface;
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'method_channel_notepad_core.dart';
@@ -36,6 +37,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<bool> isBluetoothAvailable();
+
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   });
@@ -52,11 +55,21 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   MessageHandler messageHandler;
 
-  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic);
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty);
 
   void readValue(Tuple2<String, String> serviceCharacteristic);
 
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value);
 
   Stream<Tuple2<String, Uint8List>> get inputValueStream;
+}
+
+class BleInputProperty {
+  static final disabled = BleInputProperty._('disabled');
+  static final notification = BleInputProperty._('notification');
+  static final indication = BleInputProperty._('indication');
+
+  final String value;
+
+  BleInputProperty._(this.value);
 }

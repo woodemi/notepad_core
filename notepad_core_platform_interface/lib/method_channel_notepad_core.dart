@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'notepad_core_platform_interface.dart';
 
@@ -18,6 +17,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     _message_connector.setMessageHandler(_handleConnectorMessage);
     _message_client.setMessageHandler(_handleClientMessage);
   }
+
+  @override
+  Future<bool> isBluetoothAvailable() => _method.invokeMethod('isBluetoothAvailable');
 
   @override
   Future<dynamic> requestDevice({
@@ -62,7 +64,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
 
   Future<dynamic> _handleConnectorMessage(dynamic message) async {
     print('_handleConnectorMessage $message');
-    if (message['ConnectionState'] != null) {
+    if (message['BluetoothState'] != null) {
+      if (messageHandler != null) messageHandler(BluetoothState.parse(message['BluetoothState']));
+    } else if (message['ConnectionState'] != null) {
       var connectionState = NotepadConnectionState.parse(message['ConnectionState']);
       if (connectionState == NotepadConnectionState.connected) {
         _method.invokeMethod('discoverServices').then((_) => print('discoverServices invokeMethod success'));
@@ -79,11 +83,11 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   final _characteristicConfigController = StreamController<String>.broadcast();
 
   @override
-  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty) async {
     _method.invokeMethod('setNotifiable', {
       'service': serviceCharacteristic.item1,
       'characteristic': serviceCharacteristic.item2,
-      'bleInputProperty': 'indication',
+      'bleInputProperty': bleInputProperty.value,
     }).then((_) => print('setNotifiable invokeMethod success'));
     // TODO Timeout
     await _characteristicConfigController.stream.any((c) => c == serviceCharacteristic.item2);

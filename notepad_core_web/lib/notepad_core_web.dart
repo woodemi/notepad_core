@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:html' show Event;
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
+import 'package:js/js_util.dart' show getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
-import 'js_facade.dart';
 import 'notepad_core_js.dart';
 
 class NotepadCorePlugin extends NotepadCorePlatform {
@@ -14,15 +15,28 @@ class NotepadCorePlugin extends NotepadCorePlatform {
     NotepadCorePlatform.instance = NotepadCorePlugin();
   }
 
+  NotepadCorePlugin() {
+    bluetooth.addEventListener(Bluetooth.availabilityEvent, _onAvailabilityChanged);
+  }
+
+  @override
+  Future<bool> isBluetoothAvailable() => bluetooth.getAvailability();
+
+  void _onAvailabilityChanged(Event event) async {
+    bool available = getProperty(event, 'value');
+    var bluetoothState = available ? BluetoothState.available : BluetoothState.unavailable;
+    print('_onAvailabilityChanged $event, $bluetoothState');
+    if (messageHandler != null) messageHandler(bluetoothState);
+  }
+
   @override
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   }) async {
-    var requestDevice = Bluetooth.requestDevice(ScanOptions(
+    return await bluetooth.requestDevice(ScanOptions(
       optionalServices: optionalServices.map(getServiceUUID).toList(),
       acceptAllDevices: true,
     ));
-    return BluetoothDevice(await promiseToFuture(requestDevice));
   }
 
   @override
@@ -80,7 +94,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     characteristic.startNotifications();
     characteristic.addEventListener(BluetoothRemoteGATTCharacteristic.valueChangedEvent, allowInterop(_onCharacteristicValueChange));
@@ -108,7 +122,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
 
   void _onCharacteristicValueChange(Event event) {
     var characteristic = BluetoothRemoteGATTCharacteristic(event.target);
-    _characteristicValueController.add(Tuple2(characteristic.uuid, characteristic.value));
+    var characteristicValue = Tuple2(characteristic.uuid, characteristic.value);
+    print('_onCharacteristicValueChange ${characteristicValue.item1}, ${hex.encode(characteristicValue.item2)}');
+    _characteristicValueController.add(characteristicValue);
   }
 }
 

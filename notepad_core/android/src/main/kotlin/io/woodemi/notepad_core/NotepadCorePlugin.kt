@@ -3,7 +3,10 @@ package io.woodemi.notepad_core
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -13,16 +16,20 @@ import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.io.Closeable
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 
 private const val TAG = "NotepadCorePlugin"
 
+private var initCount = 0
+
 /** NotepadCorePlugin */
-class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
+class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, Closeable {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        NotepadCorePlugin(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
+        if (initCount++ < 1) return // FIXME onAttachedToEngine may twice
+        init(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -37,18 +44,20 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            NotepadCorePlugin(registrar.context(), registrar.messenger())
+            NotepadCorePlugin().init(registrar.context(), registrar.messenger())
         }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        close()
     }
 
     private lateinit var context: Context
 
-    constructor(context: Context, messenger: BinaryMessenger) : this() {
+    private fun init(context: Context, messenger: BinaryMessenger) {
         this.context = context
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        context.registerReceiver(bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
         MethodChannel(messenger, "notepad_core/method").setMethodCallHandler(this)
         EventChannel(messenger, "notepad_core/event.scanResult").setStreamHandler(this)
@@ -56,9 +65,31 @@ class NotepadCorePlugin() : FlutterPlugin, MethodCallHandler, EventChannel.Strea
         clientMessage = BasicMessageChannel(messenger, "notepad_core/message.client", StandardMessageCodec.INSTANCE)
     }
 
+    override fun close() {
+        context.unregisterReceiver(bluetoothReceiver)
+    }
+
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+            Log.d(TAG, "bluetoothReceiver onReceive $state")
+            when (state) {
+                BluetoothAdapter.STATE_OFF -> {
+                    mainThreadHandler.post { connectorMessage.send(mapOf("BluetoothState" to "unavailable")) }
+                }
+                BluetoothAdapter.STATE_ON -> {
+                    mainThreadHandler.post { connectorMessage.send(mapOf("BluetoothState" to "available")) }
+                }
+            }
+        }
+    }
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        Log.d(TAG, "onMethodCall " + call.method)
+        Log.d(TAG, "$this onMethodCall " + call.method)
         when (call.method) {
+            "isBluetoothAvailable" -> {
+                result.success(bluetoothManager.adapter.isEnabled)
+            }
             "startScan" -> {
                 bluetoothManager.adapter.bluetoothLeScanner?.startScan(scanCallback)
                 result.success(null)
