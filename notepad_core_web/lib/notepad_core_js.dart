@@ -11,13 +11,19 @@ import 'js_facade.dart';
 @JS('navigator.bluetooth')
 external EventTarget get _bluetooth;
 
+@JS('navigator.bluetooth.addEventListener')
+external void addBluetoothListener(String type, listener(event), [bool useCapture]);
+
+@JS('navigator.bluetooth.removeEventListener')
+external void removeBluetoothListener(String type, listener(event), [bool useCapture]);
+
 final Bluetooth bluetooth = Bluetooth(_bluetooth);
 
-class Bluetooth extends EventTargetDelegate {
+class Bluetooth extends Delegate<dynamic> {
   /// Event type should be [const]
   static const availabilityEvent = 'availabilitychanged';
 
-  Bluetooth(EventTarget delegate) : super(delegate);
+  Bluetooth(dynamic delegate) : super(delegate);
 
   Future<bool> getAvailability() {
     var promise = callMethod('getAvailability', null);

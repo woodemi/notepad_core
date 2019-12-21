@@ -1,3 +1,7 @@
+## [1.2.1] - 2019-12-21
+
+- Fix `addEventListener` in `Bluetooth` when release
+
 ## [1.2.0] - 2019-12-21
 
 ### NotepadCorePlugin
