@@ -19,6 +19,8 @@ class NotepadConnector {
     NotepadCorePlatform.instance.messageHandler = _handleMessage;
   }
 
+  Future<bool> isBluetoothAvailable() => NotepadCorePlatform.instance.isBluetoothAvailable();
+
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
 
