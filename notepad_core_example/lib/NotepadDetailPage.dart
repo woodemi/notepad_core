@@ -17,7 +17,7 @@ final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 _toast(String msg) => _scaffoldKey.currentState
   .showSnackBar(SnackBar(content: Text(msg), duration: Duration(seconds: 2)));
 
-class _NotepadDetailPageState extends State<NotepadDetailPage> {
+class _NotepadDetailPageState extends State<NotepadDetailPage> implements NotepadClientCallback {
   @override
   void initState() {
     super.initState();
@@ -36,9 +36,16 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> {
     print('_handleConnectionChange $client $state');
     if (state == NotepadConnectionState.connected) {
       _notepadClient = client;
+      _notepadClient.callback = this;
     } else {
+      _notepadClient?.callback = null;
       _notepadClient = null;
     }
+  }
+
+  @override
+  void handlePointer(List<NotePenPointer> list) {
+    print('handlePointer ${list.length}');
   }
 
   @override
