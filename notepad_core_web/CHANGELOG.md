@@ -1,9 +1,15 @@
+## [1.2.0] - 2019-12-21
+
+### NotepadCorePlugin
+
+- Implement `isBluetoothAvailable`
+- Implement `BluetoothState` notification
+
 ## [1.1.0] - 2019-12-20
 
-### NotepadCorePlatform
+### NotepadCorePlugin
 
 #### Operate service/characteristic
-
 - Implement `readValue`
 - Implement `inputValueStream`
 

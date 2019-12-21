@@ -1,3 +1,11 @@
+## [1.2.0] - 2019-12-21
+
+### NotepadCorePlatform
+
+- Add `isBluetoothAvailable`
+- Notify `BluetoothState` through `messageHandler`
+- Add `BleInputProperty` to `setNotifiable`
+
 ## [1.1.0] - 2019-12-20
 
 ### NotepadCorePlatform
