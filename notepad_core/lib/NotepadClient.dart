@@ -83,4 +83,8 @@ abstract class NotepadClient {
 
   Future<void> setAutoLockTime(int time); // minute
   //#endregion
+
+  //#region SyncInput
+  Future<void> setMode(NotepadMode notepadMode);
+  //#endregion
 }
