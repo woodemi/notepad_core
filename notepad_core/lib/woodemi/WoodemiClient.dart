@@ -204,4 +204,14 @@ class WoodemiClient extends NotepadClient {
     return await notepadType.executeCommand(command);
   }
   //#endregion
+
+  @override
+  Future<void> setMode(NotepadMode notepadMode) async {
+    var mode = notepadMode == NotepadMode.Sync ? 0x00 : 0x01;
+    await notepadType.executeCommand(
+      WoodemiCommand(
+        request: Uint8List.fromList([0x05, mode]),
+      ),
+    );
+  }
 }

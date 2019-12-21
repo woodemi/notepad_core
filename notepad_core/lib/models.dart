@@ -20,6 +20,8 @@ class NotepadScanResult {
       };
 }
 
+enum NotepadMode { Sync, Common }
+
 class BatteryInfo {
   final int percent;
   final bool charging;

@@ -69,6 +69,17 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> {
           ),
           _buildAuthorizationButtons(),
           ..._buildDeviceInfoButtons(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              RaisedButton(
+                child: Text('setMode'),
+                onPressed: () async {
+                  await _notepadClient.setMode(NotepadMode.Sync);
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );
