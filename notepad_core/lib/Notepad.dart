@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 
+import 'models.dart';
+
 const GSS_SUFFIX = "0000-1000-8000-00805f9b34fb";
 const CODE__SERV_BATTERY = "180f";
 const CODE__CHAR_BATTERY_LEVEL = "2a19";
@@ -42,4 +44,16 @@ class AccessException implements Exception {
   final String message;
 
   AccessException._(this.message);
+}
+
+List<NotePenPointer> parseSyncPointer(Uint8List value) {
+  var byteData = value.buffer.asByteData();
+  return List.generate(value.length ~/ 6, (index) {
+    return NotePenPointer(
+        byteData.getUint16(index * 6, Endian.little),
+        byteData.getUint16(index * 6 + 2, Endian.little),
+        -1,
+        byteData.getUint16(index * 6 + 4, Endian.little),
+    );
+  });
 }

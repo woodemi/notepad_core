@@ -67,6 +67,8 @@ class WoodemiClient extends NotepadClient {
       default:
         break;
     }
+
+    await super.completeConnection(awaitConfirm);
   }
 
   //#region authorization
@@ -114,7 +116,7 @@ class WoodemiClient extends NotepadClient {
 
   //#region Device Info
   @override
-  Size getDeviceSize() => Size(14800, 21000);
+  Size getDeviceSize() => Size(A1_WIDTH.toDouble(), A1_HEIGHT.toDouble());
 
   @override
   Future<String> getDeviceName() async {
@@ -202,6 +204,26 @@ class WoodemiClient extends NotepadClient {
       },
     );
     return await notepadType.executeCommand(command);
+  }
+  //#endregion
+
+  //#region SyncInput
+  @override
+  Future<void> setMode(NotepadMode notepadMode) async {
+    var mode = notepadMode == NotepadMode.Sync ? 0x00 : 0x01;
+    await notepadType.executeCommand(
+      WoodemiCommand(
+        request: Uint8List.fromList([0x05, mode]),
+      ),
+    );
+  }
+
+  @override
+  List<NotePenPointer> parseSyncData(Uint8List value) {
+    return parseSyncPointer(value).where((pointer) {
+      return 0 <= pointer.x && pointer.x <= A1_WIDTH
+          && 0<= pointer.y && pointer.y <= A1_HEIGHT;
+    }).toList();
   }
   //#endregion
 }

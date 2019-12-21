@@ -83,11 +83,11 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   final _characteristicConfigController = StreamController<String>.broadcast();
 
   @override
-  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic) async {
+  Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty) async {
     _method.invokeMethod('setNotifiable', {
       'service': serviceCharacteristic.item1,
       'characteristic': serviceCharacteristic.item2,
-      'bleInputProperty': 'indication',
+      'bleInputProperty': bleInputProperty.value,
     }).then((_) => print('setNotifiable invokeMethod success'));
     // TODO Timeout
     await _characteristicConfigController.stream.any((c) => c == serviceCharacteristic.item2);
