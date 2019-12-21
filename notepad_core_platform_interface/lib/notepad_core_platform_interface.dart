@@ -36,6 +36,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<bool> isBluetoothAvailable();
+
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   });
