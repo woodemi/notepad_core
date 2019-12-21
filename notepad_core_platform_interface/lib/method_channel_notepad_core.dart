@@ -20,6 +20,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
+  Future<bool> isBluetoothAvailable() => _method.invokeMethod('isBluetoothAvailable');
+
+  @override
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   }) {

@@ -77,7 +77,10 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSLog(@"handleMethodCall %@", call.method);
-    if ([call.method isEqualToString:@"startScan"]) {
+    if ([call.method isEqualToString:@"isBluetoothAvailable"]) {
+        [_manager scanForPeripheralsWithServices:nil options:nil];
+        result(@(_manager.state == CBManagerStatePoweredOn));
+    } else if ([call.method isEqualToString:@"startScan"]) {
         [_manager scanForPeripheralsWithServices:nil options:nil];
         result(nil);
     } else if ([call.method isEqualToString:@"stopScan"]) {
@@ -112,8 +115,8 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSString *characteristic = call.arguments[@"characteristic"];
         FlutterStandardTypedData *value = call.arguments[@"value"];
         [_peripheral writeValue:[value data]
-              forCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]
-                           type:CBCharacteristicWriteWithResponse];
+                forCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]
+                             type:CBCharacteristicWriteWithResponse];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);
