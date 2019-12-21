@@ -46,6 +46,13 @@ class _MobileHomePageState extends State<_MobileHomePage> {
       ),
       body: Column(
         children: <Widget>[
+          FutureBuilder(
+            future: notepadConnector.isBluetoothAvailable(),
+            builder: (context, snapshot) {
+              var available = snapshot.data?.toString() ?? '...';
+              return Text('Bluetooth: $available');
+            },
+          ),
           _buildButtons(),
           Divider(color: Colors.blue,),
           _buildListView(),

@@ -26,6 +26,13 @@ class _WebHomePageState extends State<_WebHomePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          FutureBuilder(
+            future: notepadConnector.isBluetoothAvailable(),
+            builder: (context, snapshot) {
+              var available = snapshot.data?.toString() ?? '...';
+              return Text('Bluetooth: $available');
+            },
+          ),
           RaisedButton(
             child: Text('requestDevice'),
             onPressed: () async {
