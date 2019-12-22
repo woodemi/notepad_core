@@ -10,6 +10,7 @@ Flutter plugin for connect & operate on smart notepad
 # Usage
 - Scan notepad
 - Connect notepad
+- Claim notepad
 
 ## Scan notepad
 
@@ -47,4 +48,16 @@ val authToken = null
 notepadConnector.connect(context, result, authToken)
 // ...
 notepadConnector.disconnect()
+```
+
+## Claim notepad
+
+Claim with `authToken`, the parameter of `NotepadConnector#connect`
+
+```dart
+await _notepadClient.claimAuth();
+print('claimAuth success');
+// ...
+await _notepadClient.disclaimAuth();
+print('disclaimAuth success');
 ```
