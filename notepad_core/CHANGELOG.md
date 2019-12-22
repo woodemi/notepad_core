@@ -1,3 +1,7 @@
+## [1.2.0+1] - 2019-12-22
+
+Add [README.md](./README.md) & [README-CN.md](./README-CN.md)
+
 ## [1.2.0] - 2019-12-21
 
 ### NotepadConnector
