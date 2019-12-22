@@ -12,6 +12,7 @@ Flutter plugin for connect & operate on smart notepad
 - Connect notepad
 - Claim notepad
 - Sync notepen pointer
+- Get notepad info
 
 ## Scan notepad
 
@@ -79,7 +80,7 @@ Notepad is always `NotepadMode.Common` (connected or disconnected), unless `setM
 
 ```dart
 await _notepadClient.setMode(NotepadMode.Sync);
-print("setMode complete");
+print('setMode complete');
 ```
 
 ### NotepadClientCallback#handlePointer
@@ -87,11 +88,55 @@ print("setMode complete");
 Receive `NotePenPointer`s in `NotepadMode.Sync`
 
 ```dart
-notepadClient.callback = this;
+_notepadClient.callback = this;
 
 @override
   void handlePointer(List<NotePenPointer> list) {
     print('handlePointer ${list.length}');
   }
 }
+```
+
+## Get notepad info
+
+### Paint Size
+
+```dart
+print('Size: ${_notepadClient.getDeviceSize()}')
+```
+
+### Device Name
+
+```dart
+var name = await _notepadClient.getDeviceName();
+print('getDeviceName $name');
+
+await _notepadClient.setDeviceName('name');
+print('setDeviceName complete');
+```
+
+### Battery Info
+
+```dart
+var batteryInfo = await _notepadClient.getBatteryInfo();
+print('getBatteryInfo $batteryInfo');
+```
+
+### Device Date
+
+```dart
+var timestamp = await _notepadClient.getDeviceDate();
+print('getDeviceDate $date');
+
+await _notepadClient.setDeviceDate(timestamp);
+println('setDeviceDate complete');
+```
+
+### Auto-Lock Time
+
+```dart
+var duration = await _notepadClient.getAutoLockTime();
+
+await _notepadClient.setAutoLockTime(duration);
+print('setAutoLockTime complete');
 ```
