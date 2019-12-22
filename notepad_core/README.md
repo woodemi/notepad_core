@@ -16,6 +16,8 @@ Flutter plugin for connect & operate on smart notepad
 
 ## Scan notepad
 
+### Android/iOS
+
 ```dart
 notepadConnector.scanResultStream.listen((result) {
     print('onScanResult $result');
