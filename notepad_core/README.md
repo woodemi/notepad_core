@@ -1,14 +1,30 @@
+English | [简体中文](./README-CN.md)
+
 # notepad_core
+Flutter plugin for connect & operate on smart notepad
 
-A new flutter plugin project.
+- [36notes](https://www.36notes.com)
+- [Pendo](http://www.pendo-tech.com) TODO
+- [Wacom Smartpads](https://www.wacom.com/en-us/products/smartpads) TODO
 
-## Getting Started
+# Usage
+- Scan notepad
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+## Scan notepad
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+```dart
+notepadConnector.scanResultStream.listen((result) {
+    print('onScanResult $result');
+});
+
+notepadConnector.startScan();
+// ...
+notepadConnector.stopScan();
+```
+
+### Web
+
+```dart
+var device = notepadConnector.requestDevice();
+print('requestDevice $device');
+```
