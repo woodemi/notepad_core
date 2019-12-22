@@ -11,6 +11,7 @@
 - 扫描设备
 - 连接设备
 - 绑定设备
+- 接收实时笔迹
 
 ## 扫描设备
 
@@ -46,10 +47,10 @@ void _handleConnectionChange(NotepadClient client, NotepadConnectionState state)
     print('_handleConnectionChange $client $state');
 }
 
-val authToken = null
-notepadConnector.connect(context, result, authToken)
+var authToken = null;
+notepadConnector.connect(result, authToken);
 // ...
-notepadConnector.disconnect()
+notepadConnector.disconnect();
 ```
 
 ## 绑定设备
@@ -62,4 +63,37 @@ print('claimAuth success');
 // ...
 await _notepadClient.disclaimAuth();
 print('disclaimAuth success');
+```
+
+## 接收实时笔迹
+
+### NotepadClient#setMode
+
+- NotepadMode.Common
+
+    设备仅保存压力>0的`NotePenPointer`（含时间戳）到**离线字迹**中
+
+- NotepadMode.Sync
+
+    设备发送所有`NotePenPointer`（无时间戳）到连接的**手机/Pad**上
+
+设备默认为`NotepadMode.Common`（连接/未连接），只有连接后`setMode`才会更改
+
+```dart
+await _notepadClient.setMode(NotepadMode.Sync);
+print("setMode complete");
+```
+
+### NotepadClientCallback#handlePointer
+
+当`NotepadMode.Sync`时，接收`NotePenPointer`
+
+```dart
+notepadClient.callback = this;
+
+@override
+  void handlePointer(List<NotePenPointer> list) {
+    print('handlePointer ${list.length}');
+  }
+}
 ```
