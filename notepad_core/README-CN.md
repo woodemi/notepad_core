@@ -12,6 +12,7 @@
 - 连接设备
 - 绑定设备
 - 接收实时笔迹
+- 获取设备信息
 
 ## 扫描设备
 
@@ -81,7 +82,7 @@ print('disclaimAuth success');
 
 ```dart
 await _notepadClient.setMode(NotepadMode.Sync);
-print("setMode complete");
+print('setMode complete');
 ```
 
 ### NotepadClientCallback#handlePointer
@@ -89,11 +90,55 @@ print("setMode complete");
 当`NotepadMode.Sync`时，接收`NotePenPointer`
 
 ```dart
-notepadClient.callback = this;
+_notepadClient.callback = this;
 
 @override
   void handlePointer(List<NotePenPointer> list) {
     print('handlePointer ${list.length}');
   }
 }
+```
+
+## 获取设备信息
+
+### 笔迹范围
+
+```dart
+print('Size: ${_notepadClient.getDeviceSize()}')
+```
+
+### 设备名称
+
+```dart
+var name = await _notepadClient.getDeviceName();
+print('getDeviceName $name');
+
+await _notepadClient.setDeviceName('name');
+print('setDeviceName complete');
+```
+
+### 电量信息
+
+```dart
+var batteryInfo = await _notepadClient.getBatteryInfo();
+print('getBatteryInfo $batteryInfo');
+```
+
+### 设备时钟
+
+```dart
+var timestamp = await _notepadClient.getDeviceDate();
+print('getDeviceDate $date');
+
+await _notepadClient.setDeviceDate(timestamp);
+println('setDeviceDate complete');
+```
+
+### 设备自动休眠时长
+
+```dart
+var duration = await _notepadClient.getAutoLockTime();
+
+await _notepadClient.setAutoLockTime(duration);
+print('setAutoLockTime complete');
 ```
