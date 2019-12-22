@@ -44,7 +44,7 @@ packages:
     source: hosted
     version: "1.14.11"
   convert:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: convert
       url: "https://pub.flutter-io.cn"
@@ -103,16 +103,16 @@ packages:
   notepad_core_platform_interface:
     dependency: "direct main"
     description:
-      path: "../notepad_core_platform_interface"
-      relative: true
-    source: path
+      name: notepad_core_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "1.2.0"
   notepad_core_web:
     dependency: "direct main"
     description:
-      path: "../notepad_core_web"
-      relative: true
-    source: path
+      name: notepad_core_web
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "1.2.1"
   path:
     dependency: transitive

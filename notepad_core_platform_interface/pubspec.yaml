@@ -1,8 +1,7 @@
 name: notepad_core_platform_interface
 description: A new Flutter package project.
 version: 1.2.0
-author:
-homepage:
+homepage: http://woodemi.com
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
