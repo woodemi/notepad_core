@@ -58,4 +58,10 @@ class NotepadType {
     print('onSyncInputReceive ${hex.encode(value)}');
     return value;
   });
+
+  Future<T> executeFileInputControl<T>(NotepadCommand<T> command) async {
+    await sendRequestAsync('FileInputControl', _notepadClient.fileInputControlRequestCharacteristic, command.request);
+    var response = await receiveResponseAsync('FileInputControl', _notepadClient.fileInputControlResponseCharacteristic, command.intercept);
+    return command.handle(response);
+  }
 }
