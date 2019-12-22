@@ -117,16 +117,16 @@ packages:
   notepad_core_platform_interface:
     dependency: transitive
     description:
-      name: notepad_core_platform_interface
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core_platform_interface"
+      relative: true
+    source: path
     version: "1.2.0"
   notepad_core_web:
-    dependency: transitive
+    dependency: "direct main"
     description:
-      name: notepad_core_web
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core_web"
+      relative: true
+    source: path
     version: "1.2.1"
   path:
     dependency: transitive
@@ -149,6 +149,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.4.0"
+  platform_detect:
+    dependency: transitive
+    description:
+      name: platform_detect
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -156,6 +163,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.1"
+  pub_semver:
+    dependency: transitive
+    description:
+      name: pub_semver
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.2"
   quiver:
     dependency: transitive
     description:

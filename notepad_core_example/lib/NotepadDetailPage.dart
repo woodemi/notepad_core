@@ -87,6 +87,7 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
               ),
             ],
           ),
+          ..._buildImportMemoButtons(),
         ],
       ),
     );
@@ -197,6 +198,52 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
             onPressed: () async => {
               await _notepadClient.setAutoLockTime(10),
               _toast('new AutoLockTime = ${await _notepadClient.getAutoLockTime()}')
+            },
+          ),
+        ],
+      ),
+    ];
+  }
+
+  List<Widget> _buildImportMemoButtons() {
+    return <Widget> [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          RaisedButton(
+            child: Text('getMemoSummary'),
+            onPressed: () async {
+              var memoSummary = await _notepadClient.getMemoSummary();
+              print('getMemoSummary $memoSummary');
+            },
+          ),
+          RaisedButton(
+            child: Text('getMemoInfo'),
+            onPressed: () async {
+              var memoInfo = await _notepadClient.getMemoInfo();
+              print('getMemoInfo $memoInfo');
+            },
+          ),
+        ],
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          RaisedButton(
+            child: Text('importMemo'),
+            onPressed: () async {
+              var memoData = await _notepadClient
+                  .importMemo((progress) => print('progress $progress'));
+              print('importMemo finish');
+              memoData.pointers.forEach((p) async {
+                print('memoData x = ${p.x}\ty = ${p.y}\tt = ${p.t}\tp = ${p.p}');
+              });
+            },
+          ),
+          RaisedButton(
+            child: Text('deleteMemo'),
+            onPressed: () {
+              _notepadClient.deleteMemo();
             },
           ),
         ],

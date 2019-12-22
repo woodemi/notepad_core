@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
@@ -93,6 +92,16 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
     await _characteristicConfigController.stream.any((c) => c == serviceCharacteristic.item2);
   }
 
+  // FIXME Close
+  final _mtuConfigController = StreamController<int>.broadcast();
+
+  Future<int> requestMtu(int expectedMtu) async {
+    _method.invokeMethod('requestMtu', {
+      'expectedMtu': expectedMtu,
+    }).then((_) => print('requestMtu invokeMethod success'));
+    return await _mtuConfigController.stream.first;
+  }
+
   @override
   void readValue(Tuple2<String, String> serviceCharacteristic) {
     _method.invokeListMethod('readValue', {
@@ -129,6 +138,8 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       var characteristicValue = message['characteristicValue'];
       var value = Uint8List.fromList(characteristicValue['value']); // In case of _Uint8ArrayView
       _characteristicValueController.add(Tuple2(characteristicValue['characteristic'], value));
+    } else if (message['mtuConfig'] != null) {
+      _mtuConfigController.add(message['mtuConfig']);
     }
   }
 }

@@ -100,4 +100,14 @@ abstract class NotepadClient {
 
   List<NotePenPointer> parseSyncData(Uint8List value);
   //#endregion
+
+  //#region ImportMemo
+  Future<MemoSummary> getMemoSummary();
+
+  Future<MemoInfo> getMemoInfo();
+
+  Future<MemoData> importMemo(void progress(int));
+
+  Future<void> deleteMemo();
+  //#endregion
 }
