@@ -10,6 +10,7 @@
 # 功能
 - 扫描设备
 - 连接设备
+- 绑定设备
 
 ## 扫描设备
 
@@ -49,4 +50,16 @@ val authToken = null
 notepadConnector.connect(context, result, authToken)
 // ...
 notepadConnector.disconnect()
+```
+
+## 绑定设备
+
+用`NotepadConnector#connect`的`authToken`绑定设备
+
+```dart
+await _notepadClient.claimAuth();
+print('claimAuth success');
+// ...
+await _notepadClient.disclaimAuth();
+print('disclaimAuth success');
 ```
