@@ -101,6 +101,12 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
+  Future<int> requestMtu(int expectedMtu) {
+    // FIXME
+    return Future.value(expectedMtu);
+  }
+
+  @override
   void readValue(Tuple2<String, String> serviceCharacteristic) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     characteristic.readValue().then((value) {
