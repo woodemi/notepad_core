@@ -7,6 +7,7 @@ import 'package:notepad_core_platform_interface/notepad_core_platform_interface.
 import '../Notepad.dart';
 import '../NotepadClient.dart';
 import '../models.dart';
+import 'ImageTransmission.dart';
 import 'Woodemi.dart';
 
 class WoodemiClient extends NotepadClient {
@@ -225,5 +226,70 @@ class WoodemiClient extends NotepadClient {
           && 0<= pointer.y && pointer.y <= A1_HEIGHT;
     }).toList();
   }
+  //#endregion
+
+  //#region ImportMemo
+  @override
+  Future<MemoSummary> getMemoSummary() {
+    var handle = (Uint8List value) {
+      var byteData = value.buffer.asByteData();
+      var position = 1; // skip 1
+      var totalCapacity = byteData.getUint32(position, Endian.little);
+      var freeCapacity = byteData.getUint32(position += 4, Endian.little);
+      var usedCapacity = byteData.getUint32(position += 4, Endian.little);
+      var memoCount = byteData.getUint16(position += 4, Endian.little);
+      return MemoSummary(memoCount, totalCapacity, freeCapacity, usedCapacity);
+    };
+    return notepadType.executeCommand(WoodemiCommand(
+      request: Uint8List.fromList([0x08, 0x02]),
+      intercept: (value) => value.first == 0x0D,
+      handle: handle,
+    ));
+  }
+
+  @override
+  Future<MemoInfo> getMemoInfo() async {
+    var largeDataInfo = await getLargeDataInfo();
+    return MemoInfo(
+      largeDataInfo.sizeInByte - ImageTransmission.EMPTY_LENGTH,
+      largeDataInfo.createdAt,
+      largeDataInfo.partIndex,
+      largeDataInfo.restCount,
+    );
+  }
+
+  Future<MemoInfo> getLargeDataInfo() async {
+    var data = fileInfo.item1 + fileInfo.item2;
+    var handle = (Uint8List value) {
+      var byteData = value.buffer.asByteData();
+      var position = 1; // skip 1
+      var partIndex = byteData.getUint8(position);
+      var restCount = byteData.getUint8(position += 1);
+
+      position += 1;
+      var chars = value.sublist(position, position + fileInfo.item2.length);
+      var seconds = int.parse(String.fromCharCodes(chars, 0, chars.length), radix: 16);
+      var createdAt = Duration(seconds: seconds).inMilliseconds;
+      
+      var sizeInByte = byteData.getUint32(position += fileInfo.item2.length, Endian.little);
+      return MemoInfo(sizeInByte, createdAt, partIndex, restCount);
+    };
+
+    return notepadType.executeFileInputControl(WoodemiCommand(
+      request: Uint8List.fromList([0x02] + data),
+      intercept: (value) => value.first == 0x03,
+      handle: handle,
+    ));
+  }
+
+  final fileInfo = Tuple2(
+    Uint8List.fromList([0x00, 0x01]), // imageId
+    Uint8List.fromList([ // imageVersion
+      0x01, 0x00, 0x00, // Build Version
+      0x41, // Stack Version
+      0x11, 0x11, 0x11, // Hardware Id
+      0x01 // Manufacturer Id
+    ])
+  );
   //#endregion
 }

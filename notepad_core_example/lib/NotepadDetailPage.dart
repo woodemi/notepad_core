@@ -87,6 +87,7 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
               ),
             ],
           ),
+          _buildImportMemoButtons(),
         ],
       ),
     );
@@ -202,5 +203,27 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
         ],
       ),
     ];
+  }
+
+  Widget _buildImportMemoButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RaisedButton(
+          child: Text('getMemoSummary'),
+          onPressed: () async {
+            var memoSummary = await _notepadClient.getMemoSummary();
+            print('getMemoSummary $memoSummary');
+          },
+        ),
+        RaisedButton(
+          child: Text('getMemoInfo'),
+          onPressed: () async {
+            var memoInfo = await _notepadClient.getMemoInfo();
+            print('getMemoInfo $memoInfo');
+          },
+        ),
+      ],
+    );
   }
 }
