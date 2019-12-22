@@ -135,6 +135,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.4.0"
+  platform_detect:
+    dependency: transitive
+    description:
+      name: platform_detect
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -142,8 +149,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.1"
-  quiver:
+  pub_semver:
     dependency: transitive
+    description:
+      name: pub_semver
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.2"
+  quiver:
+    dependency: "direct main"
     description:
       name: quiver
       url: "https://pub.flutter-io.cn"

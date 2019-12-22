@@ -14,6 +14,7 @@ dependencies:
   notepad_core_web:
     path: ../notepad_core_web
   convert: ^2.1.1
+  quiver: ^2.0.5
 
 dev_dependencies:
   flutter_test:
