@@ -15,11 +15,11 @@ class NotepadType {
 
   Future<void> configCharacteristics() async {
     for (var serviceCharacteristic in _notepadClient.inputIndicationCharacteristics) {
-      print('configInputCharacteristic $serviceCharacteristic, indication');
+      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), indication');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.indication);
     }
     for (var serviceCharacteristic in _notepadClient.inputNotificationCharacteristics) {
-      print('configInputCharacteristic $serviceCharacteristic, notification');
+      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), notification');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.notification);
     }
   }

@@ -98,3 +98,21 @@ class MemoInfo {
   @override
   String toString() => '$sizeInByte, $createdAt, $partIndex, $restCount';
 }
+
+class MemoData {
+  MemoInfo memoInfo;
+  List<NotePenPointer> pointers;
+
+  MemoData(this.memoInfo, this.pointers);
+
+  MemoData.fromMap(map) {
+    this.memoInfo = MemoInfo.fromMap(map['memoInfo']);
+    var pointers = List<NotePenPointer>();
+    for (final m in map['pointers'])
+      pointers.add(NotePenPointer.fromMap(m));
+    this.pointers = pointers;
+  }
+
+  @override
+  String toString() => '$memoInfo, pointers[${pointers.length}]';
+}

@@ -7,6 +7,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart' show getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:platform_detect/platform_detect.dart';
 
 import 'notepad_core_js.dart';
 
@@ -103,7 +104,9 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   @override
   Future<int> requestMtu(int expectedMtu) {
     // FIXME
-    return Future.value(expectedMtu);
+    var mtu = operatingSystem.isMac ? 104 : expectedMtu;
+    print('requestMtu $mtu');
+    return Future.value(mtu);
   }
 
   @override

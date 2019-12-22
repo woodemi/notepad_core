@@ -26,6 +26,8 @@ const CHAR__FILE_OUTPUT = '01ff5552-$SUFFIX';
 
 final defaultAuthToken = Uint8List.fromList([0x00, 0x00, 0x00, 0x01]);
 
+const MTU_WUART = 247;
+
 const A1_WIDTH = 14800;
 const A1_HEIGHT = 21000;
 
