@@ -11,6 +11,7 @@ Flutter plugin for connect & operate on smart notepad
 - Scan notepad
 - Connect notepad
 - Claim notepad
+- Sync notepen pointer
 
 ## Scan notepad
 
@@ -44,10 +45,10 @@ void _handleConnectionChange(NotepadClient client, NotepadConnectionState state)
     print('_handleConnectionChange $client $state');
 }
 
-val authToken = null
-notepadConnector.connect(context, result, authToken)
+var authToken = null;
+notepadConnector.connect(result, authToken);
 // ...
-notepadConnector.disconnect()
+notepadConnector.disconnect();
 ```
 
 ## Claim notepad
@@ -60,4 +61,37 @@ print('claimAuth success');
 // ...
 await _notepadClient.disclaimAuth();
 print('disclaimAuth success');
+```
+
+## Sync notepen pointer
+
+### NotepadClient#setMode
+
+- NotepadMode.Common
+
+    Notepad saves only `NotePenPointer` with positive pressure & accurate timestamp, into **offline memo** 
+
+- NotepadMode.Sync
+
+    Notepad notify every `NotePenPointer`, positive or not, without timestamp, to connected **mobile device**
+
+Notepad is always `NotepadMode.Common` (connected or disconnected), unless `setMode` after connected
+
+```dart
+await _notepadClient.setMode(NotepadMode.Sync);
+print("setMode complete");
+```
+
+### NotepadClientCallback#handlePointer
+
+Receive `NotePenPointer`s in `NotepadMode.Sync`
+
+```dart
+notepadClient.callback = this;
+
+@override
+  void handlePointer(List<NotePenPointer> list) {
+    print('handlePointer ${list.length}');
+  }
+}
 ```
