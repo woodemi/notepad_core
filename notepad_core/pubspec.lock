@@ -103,16 +103,16 @@ packages:
   notepad_core_platform_interface:
     dependency: "direct main"
     description:
-      name: notepad_core_platform_interface
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core_platform_interface"
+      relative: true
+    source: path
     version: "1.2.0"
   notepad_core_web:
     dependency: "direct main"
     description:
-      name: notepad_core_web
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core_web"
+      relative: true
+    source: path
     version: "1.2.1"
   path:
     dependency: transitive
