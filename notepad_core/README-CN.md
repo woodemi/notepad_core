@@ -1,20 +1,22 @@
-English | [简体中文](./README-CN.md)
+[English](./README.md) | 简体中文
 
 # notepad_core
-Flutter plugin for connect & operate on smart notepad
+连接并操作智能手写本的Flutter插件
 
-- [36notes](https://www.36notes.com)
-- [Pendo](http://www.pendo-tech.com) TODO
-- [Wacom Smartpads](https://www.wacom.com/en-us/products/smartpads) TODO
+- [36记智能手写本](https://www.36notes.com)
+- [磐度智能书写本](http://www.pendo-tech.com/zh-cn/product/a5) TODO
+- [和冠智能笔记本](https://www.wacom.com/en-us/products/smartpads) TODO
 
-# Usage
-- Scan notepad
-- Connect notepad
-- Claim notepad
-- Sync notepen pointer
-- Get notepad info
+# 功能
+- 扫描设备
+- 连接设备
+- 绑定设备
+- 接收实时笔迹
+- 获取设备信息
 
-## Scan notepad
+## 扫描设备
+
+### Android/iOS
 
 ```dart
 notepadConnector.scanResultStream.listen((result) {
@@ -35,9 +37,9 @@ print('requestDevice $device');
 
 ## Connect notepad
 
-Connect to `result`, received from `notepadConnector.scanResultStream`
+连接从`notepadConnector.scanResultStream`中扫描到的`result`， 
 
-Parameter `authToken` is optional. `[0x00, 0x00, 0x00, 0x01]` will be used if missing
+参数`authToken`可选，不传则默认为`[0x00, 0x00, 0x00, 0x01]`
 
 ```dart
 notepadConnector.connectionChangeHandler = _handleConnectionChange;
@@ -52,9 +54,9 @@ notepadConnector.connect(result, authToken);
 notepadConnector.disconnect();
 ```
 
-## Claim notepad
+## 绑定设备
 
-Claim with `authToken`, the parameter of `NotepadConnector#connect`
+用`NotepadConnector#connect`的`authToken`绑定设备
 
 ```dart
 await _notepadClient.claimAuth();
@@ -64,19 +66,19 @@ await _notepadClient.disclaimAuth();
 print('disclaimAuth success');
 ```
 
-## Sync notepen pointer
+## 接收实时笔迹
 
 ### NotepadClient#setMode
 
 - NotepadMode.Common
 
-    Notepad saves only `NotePenPointer` with positive pressure & accurate timestamp, into **offline memo** 
+    设备仅保存压力>0的`NotePenPointer`（含时间戳）到**离线字迹**中
 
 - NotepadMode.Sync
 
-    Notepad notify every `NotePenPointer`, positive or not, without timestamp, to connected **mobile device**
+    设备发送所有`NotePenPointer`（无时间戳）到连接的**手机/Pad**上
 
-Notepad is always `NotepadMode.Common` (connected or disconnected), unless `setMode` after connected
+设备默认为`NotepadMode.Common`（连接/未连接），只有连接后`setMode`才会更改
 
 ```dart
 await _notepadClient.setMode(NotepadMode.Sync);
@@ -85,7 +87,7 @@ print('setMode complete');
 
 ### NotepadClientCallback#handlePointer
 
-Receive `NotePenPointer`s in `NotepadMode.Sync`
+当`NotepadMode.Sync`时，接收`NotePenPointer`
 
 ```dart
 _notepadClient.callback = this;
@@ -97,15 +99,15 @@ _notepadClient.callback = this;
 }
 ```
 
-## Get notepad info
+## 获取设备信息
 
-### Paint Size
+### 笔迹范围
 
 ```dart
 print('Size: ${_notepadClient.getDeviceSize()}')
 ```
 
-### Device Name
+### 设备名称
 
 ```dart
 var name = await _notepadClient.getDeviceName();
@@ -115,14 +117,14 @@ await _notepadClient.setDeviceName('name');
 print('setDeviceName complete');
 ```
 
-### Battery Info
+### 电量信息
 
 ```dart
 var batteryInfo = await _notepadClient.getBatteryInfo();
 print('getBatteryInfo $batteryInfo');
 ```
 
-### Device Date
+### 设备时钟
 
 ```dart
 var timestamp = await _notepadClient.getDeviceDate();
@@ -132,7 +134,7 @@ await _notepadClient.setDeviceDate(timestamp);
 println('setDeviceDate complete');
 ```
 
-### Auto-Lock Time
+### 设备自动休眠时长
 
 ```dart
 var duration = await _notepadClient.getAutoLockTime();

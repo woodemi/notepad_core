@@ -113,7 +113,7 @@ packages:
       path: "../notepad_core"
       relative: true
     source: path
-    version: "1.2.0"
+    version: "1.2.0+1"
   notepad_core_platform_interface:
     dependency: transitive
     description:
