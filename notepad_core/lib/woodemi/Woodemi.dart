@@ -33,6 +33,8 @@ const A1_HEIGHT = 21000;
 
 const SAMPLE_INTERVAL_MS = 5;
 
+const DEVICE_PROCESSING_INTERVAL = 110;
+
 class WoodemiCommand<T> extends NotepadCommand<T> {
   WoodemiCommand({
     @required Uint8List request,

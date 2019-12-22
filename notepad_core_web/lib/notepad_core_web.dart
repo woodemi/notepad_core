@@ -118,7 +118,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     await characteristic.writeValue(value);
   }
