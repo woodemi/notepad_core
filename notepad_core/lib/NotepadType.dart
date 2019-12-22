@@ -6,8 +6,6 @@ import 'package:notepad_core_platform_interface/notepad_core_platform_interface.
 import 'Notepad.dart';
 import 'NotepadClient.dart';
 
-const GSS_SUFFIX = '0000-1000-8000-00805f9b34fb';
-
 class NotepadType {
   final NotepadClient _notepadClient;
 
@@ -24,6 +22,12 @@ class NotepadType {
       print('configInputCharacteristic $serviceCharacteristic, notification');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.notification);
     }
+  }
+
+  int mtu;
+
+  Future<void> configMtu(int expectedMtu) async {
+    mtu = await NotepadCorePlatform.instance.requestMtu(expectedMtu) - GATT_HEADER_LENGTH;
   }
 
   Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
@@ -64,4 +68,9 @@ class NotepadType {
     var response = await receiveResponseAsync('FileInputControl', _notepadClient.fileInputControlResponseCharacteristic, command.intercept);
     return command.handle(response);
   }
+
+  Stream<Uint8List> receiveFileInput() => receiveValue(_notepadClient.fileInputCharacteristic).map((value) {
+    print('onFileInputReceive: ${hex.encode(value)}');
+    return value;
+  });
 }

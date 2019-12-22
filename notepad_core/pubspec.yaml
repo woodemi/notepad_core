@@ -9,8 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  notepad_core_platform_interface: ^1.2.0
-  notepad_core_web: ^1.2.0
+  notepad_core_platform_interface:
+    path: ../notepad_core_platform_interface
+  notepad_core_web:
+    path: ../notepad_core_web
   convert: ^2.1.1
 
 dev_dependencies:

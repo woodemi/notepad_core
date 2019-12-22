@@ -57,6 +57,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty);
 
+  Future<int> requestMtu(int expectedMtu);
+
   void readValue(Tuple2<String, String> serviceCharacteristic);
 
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value);

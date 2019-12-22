@@ -1,6 +1,8 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "NotepadCorePlugin.h"
 
+const int GATT_HEADER_LENGTH = 3;
+
 NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 
 # pragma CBUUID+Extensions
@@ -105,6 +107,11 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSString *bleInputProperty = call.arguments[@"bleInputProperty"];
         [_peripheral setNotifiable:bleInputProperty forCharacteristic:characteristic ofService:service];
         result(nil);
+    } else if ([call.method isEqualToString:@"requestMtu"]) {
+        NSUInteger mtu = [_peripheral maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse];
+        result(nil);
+        NSLog(@"peripheral.maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse %lu", (unsigned long) mtu);
+        [_clientMessage sendMessage:@{@"mtuConfig": @(mtu + GATT_HEADER_LENGTH)}];
     } else if ([call.method isEqualToString:@"readValue"]) {
         NSString *service = call.arguments[@"service"];
         NSString *characteristic = call.arguments[@"characteristic"];
