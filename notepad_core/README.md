@@ -9,6 +9,7 @@ Flutter plugin for connect & operate on smart notepad
 
 # Usage
 - Scan notepad
+- Connect notepad
 
 ## Scan notepad
 
@@ -27,4 +28,23 @@ notepadConnector.stopScan();
 ```dart
 var device = notepadConnector.requestDevice();
 print('requestDevice $device');
+```
+
+## Connect notepad
+
+Connect to `result`, received from `notepadConnector.scanResultStream`
+
+Parameter `authToken` is optional. `[0x00, 0x00, 0x00, 0x01]` will be used if missing
+
+```dart
+notepadConnector.connectionChangeHandler = _handleConnectionChange;
+
+void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
+    print('_handleConnectionChange $client $state');
+}
+
+val authToken = null
+notepadConnector.connect(context, result, authToken)
+// ...
+notepadConnector.disconnect()
 ```

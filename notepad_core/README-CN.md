@@ -9,6 +9,7 @@
 
 # 功能
 - 扫描设备
+- 连接设备
 
 ## 扫描设备
 
@@ -29,4 +30,23 @@ notepadConnector.stopScan();
 ```dart
 var device = notepadConnector.requestDevice();
 print('requestDevice $device');
+```
+
+## Connect notepad
+
+连接从`notepadConnector.scanResultStream`中扫描到的`result`， 
+
+参数`authToken`可选，不传则默认为`[0x00, 0x00, 0x00, 0x01]`
+
+```dart
+notepadConnector.connectionChangeHandler = _handleConnectionChange;
+
+void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
+    print('_handleConnectionChange $client $state');
+}
+
+val authToken = null
+notepadConnector.connect(context, result, authToken)
+// ...
+notepadConnector.disconnect()
 ```
