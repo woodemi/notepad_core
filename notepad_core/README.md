@@ -12,6 +12,7 @@ Flutter plugin for connect & operate on smart notepad
 - Connect notepad
 - Claim notepad
 - Sync notepen pointer
+- Import offline memo
 - Get notepad info
 
 ## Scan notepad
@@ -99,6 +100,51 @@ _notepadClient.callback = this;
 }
 ```
 
+## Import offline memo
+
+`memo`s are saved during `NotepadMode.Common`. `memo` consists of `NotePenPointer`s with positive pressure & accurate timestamp.
+
+`memo`s are saved in a *FIFO* queue. Usually we collect summary and loop to import each `memo`. 
+
+### Collect summary
+
+#### NotepadClient#getMemoSummary
+
+Get `memo`s' count, used space, .etc
+
+```dart
+var memoSummary = await _notepadClient.getMemoSummary();
+print('getMemoSummary $memoSummary');
+```
+
+### Import a single memo
+
+#### NotepadClient#getMemoInfo
+
+Get the first `memo`'s info from the *FIFO* queue
+
+```dart
+var memoInfo = await _notepadClient.getMemoInfo();
+print('getMemoInfo $memoInfo');
+```
+
+#### NotepadClient#importMemo
+
+Import the first `memo` from the *FIFO* queue
+
+```dart
+await _notepadClient.importMemo((progress) => print('progress $progress'));
+```
+
+#### NotepadClient#deleteMemo
+
+Delete the first `memo` from the *FIFO* queue
+
+```dart
+await _notepadClient.deleteMemo();
+print('deleteMemo complete');
+```
+
 ## Get notepad info
 
 ### Paint Size
@@ -131,7 +177,7 @@ var timestamp = await _notepadClient.getDeviceDate();
 print('getDeviceDate $date');
 
 await _notepadClient.setDeviceDate(timestamp);
-println('setDeviceDate complete');
+print('setDeviceDate complete');
 ```
 
 ### Auto-Lock Time

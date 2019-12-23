@@ -12,6 +12,7 @@
 - 连接设备
 - 绑定设备
 - 接收实时笔迹
+- 导入离线字迹
 - 获取设备信息
 
 ## 扫描设备
@@ -99,6 +100,51 @@ _notepadClient.callback = this;
 }
 ```
 
+## 导入离线字迹
+
+`离线字迹`保存于`NotepadMode.Common`。`离线字迹`由压力>0的`NotePenPointer`（含时间戳）组成
+
+`离线字迹`保存在*FIFO*队列中。通常我们先获取队列摘要，然后循环导入各个`离线字迹` 
+
+### 获取队列摘要
+
+#### NotepadClient#getMemoSummary
+
+获取队列的数量、占用空间等
+
+```dart
+var memoSummary = await _notepadClient.getMemoSummary();
+print('getMemoSummary $memoSummary');
+```
+
+### 导入单个离线笔迹
+
+#### NotepadClient#getMemoInfo
+
+获取*FIFO*队列中第一个`离线笔迹`的信息
+
+```dart
+var memoInfo = await _notepadClient.getMemoInfo();
+print('getMemoInfo $memoInfo');
+```
+
+#### NotepadClient#importMemo
+
+导入*FIFO*队列中第一个`离线笔迹`
+
+```dart
+await _notepadClient.importMemo((progress) => print('progress $progress'));
+```
+
+#### NotepadClient#deleteMemo
+
+删除*FIFO*队列中第一个`离线笔迹`
+
+```dart
+await _notepadClient.deleteMemo();
+print('deleteMemo complete');
+```
+
 ## 获取设备信息
 
 ### 笔迹范围
@@ -131,7 +177,7 @@ var timestamp = await _notepadClient.getDeviceDate();
 print('getDeviceDate $date');
 
 await _notepadClient.setDeviceDate(timestamp);
-println('setDeviceDate complete');
+print('setDeviceDate complete');
 ```
 
 ### 设备自动休眠时长
