@@ -23,7 +23,7 @@
 
 ```dart
 notepadConnector.scanResultStream.listen((result) {
-    print('onScanResult $result');
+  print('onScanResult $result');
 });
 
 notepadConnector.startScan();
@@ -48,7 +48,7 @@ print('requestDevice $device');
 notepadConnector.connectionChangeHandler = _handleConnectionChange;
 
 void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
-    print('_handleConnectionChange $client $state');
+  print('_handleConnectionChange $client $state');
 }
 
 var authToken = null;
@@ -197,6 +197,22 @@ print('setAutoLockTime complete');
 
 ```dart
 await _notepadClient.upgrade(blob, version, (progress) {
-    print("upgrade progress $progress");
+  print("upgrade progress $progress");
 });
+```
+
+## 响应设备事件
+
+- KeyEvent
+- BatteryAlertEvent
+- ChargingStatusEvent
+- StorageAlertEvent
+
+```dart
+_notepadClient.callback = this;
+
+@override
+void handleEvent(NotepadEvent notepadEvent) {
+  print('handleEvent $notepadEvent');
+}
 ```

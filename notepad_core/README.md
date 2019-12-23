@@ -15,6 +15,7 @@ Flutter plugin for connect & operate on smart notepad
 - Import offline memo
 - Get notepad info
 - Upgrade firmware
+- Handle notepad event
 
 ## Scan notepad
 
@@ -22,7 +23,7 @@ Flutter plugin for connect & operate on smart notepad
 
 ```dart
 notepadConnector.scanResultStream.listen((result) {
-    print('onScanResult $result');
+  print('onScanResult $result');
 });
 
 notepadConnector.startScan();
@@ -47,7 +48,7 @@ Parameter `authToken` is optional. `[0x00, 0x00, 0x00, 0x01]` will be used if mi
 notepadConnector.connectionChangeHandler = _handleConnectionChange;
 
 void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
-    print('_handleConnectionChange $client $state');
+  print('_handleConnectionChange $client $state');
 }
 
 var authToken = null;
@@ -196,6 +197,22 @@ Upgrade notepad firmware with `*.srec` file
 
 ```dart
 await _notepadClient.upgrade(blob, version, (progress) {
-    print("upgrade progress $progress");
+  print("upgrade progress $progress");
 });
+```
+
+## Handle notepad event
+
+- KeyEvent
+- BatteryAlertEvent
+- ChargingStatusEvent
+- StorageAlertEvent
+
+```dart
+_notepadClient.callback = this;
+
+@override
+void handleEvent(NotepadEvent notepadEvent) {
+  print('handleEvent $notepadEvent');
+}
 ```
