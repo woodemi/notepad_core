@@ -103,6 +103,13 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
+  void requestConnectionPriority(BleConnectionPriority bleConnectionPriority) {
+    _method.invokeMethod('requestConnectionPriority', {
+      'bleConnectionPriority': bleConnectionPriority.value,
+    }).then((_) => print('requestConnectionPriority invokeMethod success'));
+  }
+
+  @override
   void readValue(Tuple2<String, String> serviceCharacteristic) {
     _method.invokeListMethod('readValue', {
       'service': serviceCharacteristic.item1,

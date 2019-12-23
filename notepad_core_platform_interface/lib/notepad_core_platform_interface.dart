@@ -59,6 +59,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Future<int> requestMtu(int expectedMtu);
 
+  void requestConnectionPriority(BleConnectionPriority bleConnectionPriority);
+
   void readValue(Tuple2<String, String> serviceCharacteristic);
 
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty);
@@ -83,4 +85,14 @@ class BleOutputProperty {
   final String value;
 
   const BleOutputProperty._(this.value);
+}
+
+class BleConnectionPriority {
+  static final balanced = BleConnectionPriority._('balanced');
+  static final high = BleConnectionPriority._('high');
+  static final lowPower = BleConnectionPriority._('lowPower');
+
+  final String value;
+
+  BleConnectionPriority._(this.value);
 }

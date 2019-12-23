@@ -125,6 +125,15 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 connectGatt?.requestMtu(call.argument<Int>("expectedMtu")!!)
                 result.success(null)
             }
+            "requestConnectionPriority" -> {
+                val bleConnectionPriority = call.argument<String>("bleConnectionPriority")!!
+                connectGatt?.requestConnectionPriority(when (bleConnectionPriority) {
+                    "high" -> BluetoothGatt.CONNECTION_PRIORITY_HIGH
+                    "lowPower" -> BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
+                    else -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+                })
+                result.success(null)
+            }
             "readValue" -> {
                 val service = call.argument<String>("service")!!
                 val characteristic = call.argument<String>("characteristic")!!

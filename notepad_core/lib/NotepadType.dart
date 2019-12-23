@@ -30,6 +30,10 @@ class NotepadType {
     mtu = await NotepadCorePlatform.instance.requestMtu(expectedMtu) - GATT_HEADER_LENGTH;
   }
 
+  void configConnectionPriority(BleConnectionPriority bleConnectionPriority) {
+    NotepadCorePlatform.instance.requestConnectionPriority(bleConnectionPriority);
+  }
+
   Future<void> sendRequestAsync(
     String messageHead,
     Tuple2<String, String> serviceCharacteristic,

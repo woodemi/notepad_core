@@ -110,6 +110,11 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
+  void requestConnectionPriority(BleConnectionPriority bleConnectionPriority) {
+    // Ignore API for Android
+  }
+
+  @override
   void readValue(Tuple2<String, String> serviceCharacteristic) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     characteristic.readValue().then((value) {
