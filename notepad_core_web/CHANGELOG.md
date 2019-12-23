@@ -1,3 +1,11 @@
+## [1.3.0] - 2019-12-23
+
+### NotepadCorePlugin
+
+- Impl `requestMtu`
+- Impl `requestConnectionPriority`
+- Impl `writeValue` with optional `BleOutputProperty`
+
 ## [1.2.1] - 2019-12-21
 
 - Fix `addEventListener` in `Bluetooth` when release

@@ -121,6 +121,19 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 connectGatt?.setNotifiable(service to characteristic, bleInputProperty)
                 result.success(null)
             }
+            "requestMtu" -> {
+                connectGatt?.requestMtu(call.argument<Int>("expectedMtu")!!)
+                result.success(null)
+            }
+            "requestConnectionPriority" -> {
+                val bleConnectionPriority = call.argument<String>("bleConnectionPriority")!!
+                connectGatt?.requestConnectionPriority(when (bleConnectionPriority) {
+                    "high" -> BluetoothGatt.CONNECTION_PRIORITY_HIGH
+                    "lowPower" -> BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER
+                    else -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+                })
+                result.success(null)
+            }
             "readValue" -> {
                 val service = call.argument<String>("service")!!
                 val characteristic = call.argument<String>("characteristic")!!
@@ -209,7 +222,12 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            if (gatt != connectGatt || status != BluetoothGatt.GATT_SUCCESS) return
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onServicesDiscovered $status")
+            if (status != BluetoothGatt.GATT_SUCCESS) return
             gatt?.services?.forEach { service ->
                 Log.v(TAG, "Service " + service.uuid)
                 service.characteristics.forEach { characteristic ->
@@ -221,6 +239,16 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
             }
 
             mainThreadHandler.post { connectorMessage.send(mapOf("ServiceState" to "discovered")) }
+        }
+
+        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+            if (gatt != connectGatt) {
+                Log.e(TAG, "Probably MEMORY LEAK!")
+                return
+            }
+            Log.v(TAG, "onMtuChanged $mtu, $status")
+            if (status != BluetoothGatt.GATT_SUCCESS) return
+            mainThreadHandler.post { clientMessage.send(mapOf("mtuConfig" to mtu)) }
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {

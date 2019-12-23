@@ -1,6 +1,8 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "NotepadCorePlugin.h"
 
+const int GATT_HEADER_LENGTH = 3;
+
 NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 
 # pragma CBUUID+Extensions
@@ -78,7 +80,6 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSLog(@"handleMethodCall %@", call.method);
     if ([call.method isEqualToString:@"isBluetoothAvailable"]) {
-        [_manager scanForPeripheralsWithServices:nil options:nil];
         result(@(_manager.state == CBManagerStatePoweredOn));
     } else if ([call.method isEqualToString:@"startScan"]) {
         [_manager scanForPeripheralsWithServices:nil options:nil];
@@ -105,6 +106,14 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSString *bleInputProperty = call.arguments[@"bleInputProperty"];
         [_peripheral setNotifiable:bleInputProperty forCharacteristic:characteristic ofService:service];
         result(nil);
+    } else if ([call.method isEqualToString:@"requestMtu"]) {
+        NSUInteger mtu = [_peripheral maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse];
+        result(nil);
+        NSLog(@"peripheral.maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse %lu", (unsigned long) mtu);
+        [_clientMessage sendMessage:@{@"mtuConfig": @(mtu + GATT_HEADER_LENGTH)}];
+    } else if ([call.method isEqualToString:@"requestConnectionPriority"]) {
+        // Ignore API for Android
+        result(nil);
     } else if ([call.method isEqualToString:@"readValue"]) {
         NSString *service = call.arguments[@"service"];
         NSString *characteristic = call.arguments[@"characteristic"];
@@ -114,9 +123,11 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSString *service = call.arguments[@"service"];
         NSString *characteristic = call.arguments[@"characteristic"];
         FlutterStandardTypedData *value = call.arguments[@"value"];
+        NSString *bleOutputProperty = call.arguments[@"bleOutputProperty"];
+        enum CBCharacteristicWriteType type = [bleOutputProperty isEqualToString:@"withoutResponse"] ? CBCharacteristicWriteWithoutResponse : CBCharacteristicWriteWithResponse;
         [_peripheral writeValue:[value data]
-                forCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]
-                             type:CBCharacteristicWriteWithResponse];
+              forCharacteristic:[_peripheral getCharacteristic:characteristic ofService:service]
+                           type:type];
         result(nil);
     } else {
         result(FlutterMethodNotImplemented);

@@ -6,8 +6,6 @@ import 'package:notepad_core_platform_interface/notepad_core_platform_interface.
 import 'Notepad.dart';
 import 'NotepadClient.dart';
 
-const GSS_SUFFIX = '0000-1000-8000-00805f9b34fb';
-
 class NotepadType {
   final NotepadClient _notepadClient;
 
@@ -17,17 +15,32 @@ class NotepadType {
 
   Future<void> configCharacteristics() async {
     for (var serviceCharacteristic in _notepadClient.inputIndicationCharacteristics) {
-      print('configInputCharacteristic $serviceCharacteristic, indication');
+      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), indication');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.indication);
     }
     for (var serviceCharacteristic in _notepadClient.inputNotificationCharacteristics) {
-      print('configInputCharacteristic $serviceCharacteristic, notification');
+      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), notification');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.notification);
     }
   }
 
-  Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
-    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request);
+  int mtu;
+
+  Future<void> configMtu(int expectedMtu) async {
+    mtu = await NotepadCorePlatform.instance.requestMtu(expectedMtu) - GATT_HEADER_LENGTH;
+  }
+
+  void configConnectionPriority(BleConnectionPriority bleConnectionPriority) {
+    NotepadCorePlatform.instance.requestConnectionPriority(bleConnectionPriority);
+  }
+
+  Future<void> sendRequestAsync(
+    String messageHead,
+    Tuple2<String, String> serviceCharacteristic,
+    Uint8List request,
+    [BleOutputProperty bleOutputProperty = BleOutputProperty.withResponse]
+  ) async {
+    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request, bleOutputProperty);
     print('on${messageHead}Send: ${hex.encode(request)}');
   }
 
@@ -56,6 +69,17 @@ class NotepadType {
 
   Stream<Uint8List> receiveSyncInput() => receiveValue(_notepadClient.syncInputCharacteristic).map((value) {
     print('onSyncInputReceive ${hex.encode(value)}');
+    return value;
+  });
+
+  Future<T> executeFileInputControl<T>(NotepadCommand<T> command) async {
+    await sendRequestAsync('FileInputControl', _notepadClient.fileInputControlRequestCharacteristic, command.request);
+    var response = await receiveResponseAsync('FileInputControl', _notepadClient.fileInputControlResponseCharacteristic, command.intercept);
+    return command.handle(response);
+  }
+
+  Stream<Uint8List> receiveFileInput() => receiveValue(_notepadClient.fileInputCharacteristic).map((value) {
+    print('onFileInputReceive: ${hex.encode(value)}');
     return value;
   });
 }

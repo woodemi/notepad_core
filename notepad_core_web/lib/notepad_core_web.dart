@@ -7,6 +7,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart' show getProperty;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:platform_detect/platform_detect.dart';
 
 import 'notepad_core_js.dart';
 
@@ -101,6 +102,19 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
+  Future<int> requestMtu(int expectedMtu) {
+    // FIXME
+    var mtu = operatingSystem.isMac ? 104 : expectedMtu;
+    print('requestMtu $mtu');
+    return Future.value(mtu);
+  }
+
+  @override
+  void requestConnectionPriority(BleConnectionPriority bleConnectionPriority) {
+    // Ignore API for Android
+  }
+
+  @override
   void readValue(Tuple2<String, String> serviceCharacteristic) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     characteristic.readValue().then((value) {
@@ -109,7 +123,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   @override
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty) async {
     var characteristic = await getCharacteristic(_connectGatt, serviceCharacteristic);
     await characteristic.writeValue(value);
   }

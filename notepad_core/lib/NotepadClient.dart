@@ -11,6 +11,8 @@ import 'woodemi/WoodemiClient.dart';
 
 abstract class NotepadClientCallback {
   void handlePointer(List<NotePenPointer> list);
+
+  void handleEvent(NotepadEvent notepadEvent);
 }
 
 abstract class NotepadClient {
@@ -99,5 +101,21 @@ abstract class NotepadClient {
   Future<void> setMode(NotepadMode notepadMode);
 
   List<NotePenPointer> parseSyncData(Uint8List value);
+  //#endregion
+
+  //#region ImportMemo
+  Future<MemoSummary> getMemoSummary();
+
+  Future<MemoInfo> getMemoInfo();
+
+  Future<MemoData> importMemo(void progress(int));
+
+  Future<void> deleteMemo();
+  //#endregion
+
+  //#region Version
+  Future<VersionInfo> getVersionInfo();
+
+  Future<void> upgrade(Uint8List upgradeBlob, Version version, void progress(int));
   //#endregion
 }

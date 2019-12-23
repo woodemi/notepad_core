@@ -57,19 +57,42 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Future<void> setNotifiable(Tuple2<String, String> serviceCharacteristic, BleInputProperty bleInputProperty);
 
+  Future<int> requestMtu(int expectedMtu);
+
+  void requestConnectionPriority(BleConnectionPriority bleConnectionPriority);
+
   void readValue(Tuple2<String, String> serviceCharacteristic);
 
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value);
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty);
 
   Stream<Tuple2<String, Uint8List>> get inputValueStream;
 }
 
 class BleInputProperty {
-  static final disabled = BleInputProperty._('disabled');
-  static final notification = BleInputProperty._('notification');
-  static final indication = BleInputProperty._('indication');
+  static const disabled = BleInputProperty._('disabled');
+  static const notification = BleInputProperty._('notification');
+  static const indication = BleInputProperty._('indication');
 
   final String value;
 
-  BleInputProperty._(this.value);
+  const BleInputProperty._(this.value);
+}
+
+class BleOutputProperty {
+  static const withResponse = BleOutputProperty._('withResponse');
+  static const withoutResponse = BleOutputProperty._('withoutResponse');
+
+  final String value;
+
+  const BleOutputProperty._(this.value);
+}
+
+class BleConnectionPriority {
+  static final balanced = BleConnectionPriority._('balanced');
+  static final high = BleConnectionPriority._('high');
+  static final lowPower = BleConnectionPriority._('lowPower');
+
+  final String value;
+
+  BleConnectionPriority._(this.value);
 }
