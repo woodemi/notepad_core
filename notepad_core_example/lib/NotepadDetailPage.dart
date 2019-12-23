@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
+import 'package:http/http.dart' as http;
 
 class NotepadDetailPage extends StatefulWidget {
   final scanResult;
@@ -88,6 +90,7 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
             ],
           ),
           ..._buildImportMemoButtons(),
+          _buildUpgradeButtons(),
         ],
       ),
     );
@@ -250,4 +253,46 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
       ),
     ];
   }
+
+  Widget _buildUpgradeButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        RaisedButton(
+          child: Text('getVersionInfo'),
+          onPressed: () async {
+            VersionInfo version = await _notepadClient.getVersionInfo();
+            _toast(
+                'version.hardware = ${version.hardware.major}  version.software = ${version.hardware.minor} version.software = ${version.software.major} version.software = ${version.software.minor} version.software = ${version.software.patch}');
+          },
+        ),
+        RaisedButton(
+          child: Text('upgrade'),
+          onPressed: () async {
+            var upgradeBlob = await _loadUpgradeFile(Version(1, 0, 0));
+            await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF), (progress) {
+              print('upgrade progress $progress');
+            });
+          },
+        ),
+      ],
+    );
+  }
+}
+
+Future<Uint8List> _loadUpgradeFile(Version version) async {
+  var userServiceUrl = await _getUserServiceUrl();
+  var appUrl = await _getAppUrl(userServiceUrl, version);
+  return (await http.get(appUrl)).bodyBytes;
+}
+
+Future<String> _getUserServiceUrl() async {
+  var response = await http.get('https://service.36notes.com/v2/config/info');
+  return json.decode(response.body)['data']['entities'][0]['userServiceUrl'];
+}
+
+Future<String> _getAppUrl(String userServiceUrl, Version version) async {
+  var appVer = '${version.major}.${version.minor ?? 0}.${version.patch ?? 0}';
+  var response = await http.get('$userServiceUrl/config/nxpUpdate?appVer=$appVer');
+  return json.decode(response.body)['data']['appUrl'];
 }
