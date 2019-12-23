@@ -1,3 +1,24 @@
+## [1.3.0] - 2019-12-23
+
+### NotepadClient
+
+#### SyncInput
+
+- Improve speed on Android
+
+#### ImportMemo
+
+- Add `getMemoSummary`, `getMemoInfo`
+- Add `importMemo`, `deleteMemo`
+
+#### Versioning
+
+- Add `getVersionInfo`, `upgrade`
+
+#### Notepad Event
+
+- Add `KeyEvent`, `BatteryAlertEvent`, `ChargingStatusEvent`, `StorageAlertEvent`
+
 ## [1.2.0+1] - 2019-12-22
 
 Add [README.md](./README.md) & [README-CN.md](./README-CN.md)
