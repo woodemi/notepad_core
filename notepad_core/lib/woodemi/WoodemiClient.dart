@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 import 'package:quiver/iterables.dart' show partition;
@@ -10,6 +11,7 @@ import 'package:quiver/iterables.dart' show partition;
 import '../Notepad.dart';
 import '../NotepadClient.dart';
 import '../models.dart';
+import 'FileRecord.dart';
 import 'ImageTransmission.dart';
 import 'Woodemi.dart';
 
@@ -430,4 +432,102 @@ class WoodemiClient extends NotepadClient {
     await Future.delayed(Duration(milliseconds: 200));
   }
   //#endregion
+
+  //#region Version
+  @override
+  Future<VersionInfo> getVersionInfo() async {
+    final command = WoodemiCommand(
+      request: Uint8List.fromList([0x08, 0x00]),
+      intercept: (value) => value.first == 0x09,
+      handle: (value) {
+        final data = value.sublist(1);
+        final hardware = Version(data[1], data[2]);
+        final software = Version(data[3], data[4], data[5]);
+        return VersionInfo(hardware: hardware, software: software);
+      },
+    );
+    return await notepadType.executeCommand(command);
+  }
+
+  @override
+  Future<void> upgrade(Uint8List upgradeBlob, Version version, void progress(int)) async {
+    final fileData = await parseUpgradeBlob(upgradeBlob);
+    final imageId = hex.decode('0100');
+    final imageVersion = Uint8List.fromList(version.bytes.reversed.toList() + hex.decode('4111111101'));
+    final imageData = ImageTransmission.forOutput(imageId, imageVersion, fileData).bytes;
+    var lengthData = ByteData(4)..setUint32(0, imageData.length, Endian.little);
+    var request = [0x03] + imageId + imageVersion + lengthData.buffer.asUint8List();
+
+    notepadType.sendRequestAsync('FileOutputControl', fileOutputControlRequestCharacteristic, Uint8List.fromList(request));
+
+    while (true) {
+      // TODO Timeout
+      var receivedRequest = await notepadType.receiveResponseAsync('FileOutputControl', fileOutputControlResponseCharacteristic, (value) => true);
+      if (receivedRequest.first == 0x04) {
+        final chunks = _parseChunks(receivedRequest, imageData);
+        _sendChunks(chunks, (totalOffset) {
+          if (progress != null) progress(100 * totalOffset ~/ imageData.length);
+        });
+      } else if (receivedRequest.first == 0x06) {
+        if (receivedRequest[3] != 0x00) throw AssertionError('Data CRC fail');
+        break;
+      } else if (receivedRequest[0] == 0x07 && receivedRequest[1] == 0x05) {
+        // [0x07, 0x05, 0x0b] Notepad error when parsing chunks
+        print('Error receivedRequest: ${hex.encode(receivedRequest)}');
+      } else {
+        print('Unknown receivedRequest ${hex.encode(receivedRequest)}');
+      }
+    }
+  }
+
+  Iterable<Chunk> _parseChunks(Uint8List receivedRequest, Uint8List imageData) sync* {
+    final byteData = receivedRequest.buffer.asByteData();
+    var position = 0;
+    position++; // skip request tag
+    position += 2; // skip imageId
+    final currentPos = byteData.getUint32(position, Endian.little);
+    final blockSize = byteData.getUint32(position += 4, Endian.little);
+    final maxChunkSize = byteData.getUint16(position += 4, Endian.little);
+    print('receivedRequest currentPos $currentPos, blockSize $blockSize, maxChunkSize $maxChunkSize');
+
+    final chunkCount = (blockSize / maxChunkSize).ceil();
+    for (var i = 0; i < chunkCount; i++) {
+      final blockOffset = i * maxChunkSize;
+      final chunkSize = min(blockSize - blockOffset, maxChunkSize);
+      final rangeStart = currentPos + blockOffset;
+      final rangeEnd = rangeStart + chunkSize;
+      yield Chunk(i, rangeStart, rangeEnd, imageData.sublist(rangeStart, rangeEnd));
+    }
+  }
+
+  Future<void> _sendChunks(Iterable<Chunk> chunks, void offSetListener(int)) async {
+    var iterator = chunks.iterator..moveNext();
+    while (true) {
+      final c = iterator.current;
+      print('sendChunks ${c.index}, ${c.rangeStart}, ${c.rangeEnd}, ${c.bytes.length}');
+      var chunkData = Uint8List.fromList([0x05, c.index] + c.bytes);
+      try {
+        await notepadType.sendRequestAsync('FileOutput', fileOutputCharacteristic, chunkData, BleOutputProperty.withoutResponse);
+      } on Exception catch (e) {
+        print('sendRequestAsync error: $e');
+        return;
+      }
+      offSetListener(c.rangeEnd);
+      if (iterator.moveNext()) {
+        await Future.delayed(Duration(milliseconds: DEVICE_PROCESSING_INTERVAL));
+      } else {
+        break;
+      }
+    }
+  }
+  //#endregion
+}
+
+class Chunk {
+  final int index;
+  final int rangeStart;
+  final int rangeEnd;
+  final Uint8List bytes;
+
+  Chunk(this.index, this.rangeStart, this.rangeEnd, this.bytes);
 }

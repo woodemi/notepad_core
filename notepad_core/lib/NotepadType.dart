@@ -30,8 +30,13 @@ class NotepadType {
     mtu = await NotepadCorePlatform.instance.requestMtu(expectedMtu) - GATT_HEADER_LENGTH;
   }
 
-  Future<void> sendRequestAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Uint8List request) async {
-    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request);
+  Future<void> sendRequestAsync(
+    String messageHead,
+    Tuple2<String, String> serviceCharacteristic,
+    Uint8List request,
+    [BleOutputProperty bleOutputProperty = BleOutputProperty.withResponse]
+  ) async {
+    await NotepadCorePlatform.instance.writeValue(serviceCharacteristic, request, bleOutputProperty);
     print('on${messageHead}Send: ${hex.encode(request)}');
   }
 

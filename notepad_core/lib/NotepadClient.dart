@@ -110,4 +110,10 @@ abstract class NotepadClient {
 
   Future<void> deleteMemo();
   //#endregion
+
+  //#region Version
+  Future<VersionInfo> getVersionInfo();
+
+  Future<void> upgrade(Uint8List upgradeBlob, Version version, void progress(int));
+  //#endregion
 }

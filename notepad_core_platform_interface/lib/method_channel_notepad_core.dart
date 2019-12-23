@@ -111,11 +111,12 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   }
 
   @override
-  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value) async {
+  Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty) async {
     _method.invokeMethod('writeValue', {
       'service': serviceCharacteristic.item1,
       'characteristic': serviceCharacteristic.item2,
       'value': value,
+      'bleOutputProperty': bleOutputProperty.value,
     }).then((_) {
       print('writeValue invokeMethod success');
     }).catchError((onError) {
