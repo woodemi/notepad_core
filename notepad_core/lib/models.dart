@@ -160,3 +160,49 @@ class MemoData {
   @override
   String toString() => '$memoInfo, pointers[${pointers.length}]';
 }
+
+abstract class NotepadEvent {
+
+  factory NotepadEvent.KeyEvent(KeyEventType type, KeyEventCode code) {
+    return KeyEvent(type, code);
+  }
+
+  factory NotepadEvent.BatteryAlertEvent() {
+    return BatteryAlertEvent();
+  }
+
+  factory NotepadEvent.ChargingStatusEvent(ChargingStatusEventType type) {
+    return ChargingStatusEvent(type);
+  }
+
+  factory NotepadEvent.StorageAlertEvent() {
+    return StorageAlertEvent();
+  }
+}
+
+class KeyEvent implements NotepadEvent {
+  final KeyEventType type;
+  final KeyEventCode code;
+
+  KeyEvent(this.type, this.code);
+}
+
+enum KeyEventType { KeyUp }
+
+enum KeyEventCode { Main }
+
+class BatteryAlertEvent implements NotepadEvent {
+  BatteryAlertEvent();
+}
+
+class ChargingStatusEvent implements NotepadEvent {
+  final ChargingStatusEventType type;
+
+  ChargingStatusEvent(this.type);
+}
+
+enum ChargingStatusEventType { PowerOn, PowerOff }
+
+class StorageAlertEvent implements NotepadEvent {
+  StorageAlertEvent();
+}
