@@ -76,6 +76,33 @@ class WoodemiClient extends NotepadClient {
 
     await super.completeConnection(awaitConfirm);
     await notepadType.configMtu(MTU_WUART);
+    _configMessageInput();
+  }
+
+  void _configMessageInput() {
+    notepadType.receiveValue(commandResponseCharacteristic)
+        .where((value) => value.first == 0x06 || value.first == 0x0E)
+        .map((value) {
+          print('onMessageInputReceive ${hex.encode(value)}');
+          return value;
+        })
+        .listen(_handleMessageInput);
+  }
+
+  void _handleMessageInput(Uint8List value) {
+    print('_handleMessageInput: ${hex.encode(value)}');
+    var tuple01 = value.sublist(0, 2);
+    if (listEquals(tuple01, [0x06, 0x00])) {
+      if (value[2] == 0x01)
+        callback.handleEvent(NotepadEvent.KeyEvent(KeyEventType.KeyUp, KeyEventCode.Main));
+    } else if (listEquals(tuple01, [0x06, 0x01])) {
+      var type = value[2] == 0x01 ? ChargingStatusEventType.PowerOn : ChargingStatusEventType.PowerOff;
+      callback.handleEvent(NotepadEvent.ChargingStatusEvent(type));
+    } else if (listEquals(tuple01, [0x0E, 0x01])) {
+      callback.handleEvent(NotepadEvent.BatteryAlertEvent());
+    } else if (listEquals(tuple01, [0x0E, 0x02])) {
+      callback.handleEvent(NotepadEvent.StorageAlertEvent());
+    }
   }
 
   //#region authorization

@@ -11,6 +11,8 @@ import 'woodemi/WoodemiClient.dart';
 
 abstract class NotepadClientCallback {
   void handlePointer(List<NotePenPointer> list);
+
+  void handleEvent(NotepadEvent notepadEvent);
 }
 
 abstract class NotepadClient {
