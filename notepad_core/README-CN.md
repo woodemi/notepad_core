@@ -14,6 +14,8 @@
 - 接收实时笔迹
 - 导入离线字迹
 - 获取设备信息
+- 升级设备固件
+- 响应设备事件
 
 ## 扫描设备
 
@@ -187,4 +189,14 @@ var duration = await _notepadClient.getAutoLockTime();
 
 await _notepadClient.setAutoLockTime(duration);
 print('setAutoLockTime complete');
+```
+
+## 升级设备固件
+
+使用`*.srec`文件升级设备固件
+
+```dart
+await _notepadClient.upgrade(blob, version, (progress) {
+    print("upgrade progress $progress");
+});
 ```

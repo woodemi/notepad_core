@@ -14,6 +14,7 @@ Flutter plugin for connect & operate on smart notepad
 - Sync notepen pointer
 - Import offline memo
 - Get notepad info
+- Upgrade firmware
 
 ## Scan notepad
 
@@ -187,4 +188,14 @@ var duration = await _notepadClient.getAutoLockTime();
 
 await _notepadClient.setAutoLockTime(duration);
 print('setAutoLockTime complete');
+```
+
+## Upgrade firmware
+
+Upgrade notepad firmware with `*.srec` file
+
+```dart
+await _notepadClient.upgrade(blob, version, (progress) {
+    print("upgrade progress $progress");
+});
 ```
