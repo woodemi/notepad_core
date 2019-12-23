@@ -1,3 +1,11 @@
+## [1.3.0] - 2019-12-23
+
+### NotepadCorePlatform
+
+- Add `requestMtu`
+- Append `writeValue` with optional `BleOutputProperty`
+- Add `requestConnectionPriority` & `BleConnectionPriority`
+
 ## [1.2.0] - 2019-12-21
 
 ### NotepadCorePlatform
