@@ -12,7 +12,10 @@
 - 连接设备
 - 绑定设备
 - 接收实时笔迹
+- 导入离线字迹
 - 获取设备信息
+- 升级设备固件
+- 响应设备事件
 
 ## 扫描设备
 
@@ -20,7 +23,7 @@
 
 ```dart
 notepadConnector.scanResultStream.listen((result) {
-    print('onScanResult $result');
+  print('onScanResult $result');
 });
 
 notepadConnector.startScan();
@@ -45,7 +48,7 @@ print('requestDevice $device');
 notepadConnector.connectionChangeHandler = _handleConnectionChange;
 
 void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
-    print('_handleConnectionChange $client $state');
+  print('_handleConnectionChange $client $state');
 }
 
 var authToken = null;
@@ -99,6 +102,51 @@ _notepadClient.callback = this;
 }
 ```
 
+## 导入离线字迹
+
+`离线字迹`保存于`NotepadMode.Common`。`离线字迹`由压力>0的`NotePenPointer`（含时间戳）组成
+
+`离线字迹`保存在*FIFO*队列中。通常我们先获取队列摘要，然后循环导入各个`离线字迹` 
+
+### 获取队列摘要
+
+#### NotepadClient#getMemoSummary
+
+获取队列的数量、占用空间等
+
+```dart
+var memoSummary = await _notepadClient.getMemoSummary();
+print('getMemoSummary $memoSummary');
+```
+
+### 导入单个离线笔迹
+
+#### NotepadClient#getMemoInfo
+
+获取*FIFO*队列中第一个`离线笔迹`的信息
+
+```dart
+var memoInfo = await _notepadClient.getMemoInfo();
+print('getMemoInfo $memoInfo');
+```
+
+#### NotepadClient#importMemo
+
+导入*FIFO*队列中第一个`离线笔迹`
+
+```dart
+await _notepadClient.importMemo((progress) => print('progress $progress'));
+```
+
+#### NotepadClient#deleteMemo
+
+删除*FIFO*队列中第一个`离线笔迹`
+
+```dart
+await _notepadClient.deleteMemo();
+print('deleteMemo complete');
+```
+
 ## 获取设备信息
 
 ### 笔迹范围
@@ -131,7 +179,7 @@ var timestamp = await _notepadClient.getDeviceDate();
 print('getDeviceDate $date');
 
 await _notepadClient.setDeviceDate(timestamp);
-println('setDeviceDate complete');
+print('setDeviceDate complete');
 ```
 
 ### 设备自动休眠时长
@@ -141,4 +189,30 @@ var duration = await _notepadClient.getAutoLockTime();
 
 await _notepadClient.setAutoLockTime(duration);
 print('setAutoLockTime complete');
+```
+
+## 升级设备固件
+
+使用`*.srec`文件升级设备固件
+
+```dart
+await _notepadClient.upgrade(blob, version, (progress) {
+  print("upgrade progress $progress");
+});
+```
+
+## 响应设备事件
+
+- KeyEvent
+- BatteryAlertEvent
+- ChargingStatusEvent
+- StorageAlertEvent
+
+```dart
+_notepadClient.callback = this;
+
+@override
+void handleEvent(NotepadEvent notepadEvent) {
+  print('handleEvent $notepadEvent');
+}
 ```

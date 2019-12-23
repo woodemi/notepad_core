@@ -12,7 +12,10 @@ Flutter plugin for connect & operate on smart notepad
 - Connect notepad
 - Claim notepad
 - Sync notepen pointer
+- Import offline memo
 - Get notepad info
+- Upgrade firmware
+- Handle notepad event
 
 ## Scan notepad
 
@@ -20,7 +23,7 @@ Flutter plugin for connect & operate on smart notepad
 
 ```dart
 notepadConnector.scanResultStream.listen((result) {
-    print('onScanResult $result');
+  print('onScanResult $result');
 });
 
 notepadConnector.startScan();
@@ -45,7 +48,7 @@ Parameter `authToken` is optional. `[0x00, 0x00, 0x00, 0x01]` will be used if mi
 notepadConnector.connectionChangeHandler = _handleConnectionChange;
 
 void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
-    print('_handleConnectionChange $client $state');
+  print('_handleConnectionChange $client $state');
 }
 
 var authToken = null;
@@ -99,6 +102,51 @@ _notepadClient.callback = this;
 }
 ```
 
+## Import offline memo
+
+`memo`s are saved during `NotepadMode.Common`. `memo` consists of `NotePenPointer`s with positive pressure & accurate timestamp.
+
+`memo`s are saved in a *FIFO* queue. Usually we collect summary and loop to import each `memo`. 
+
+### Collect summary
+
+#### NotepadClient#getMemoSummary
+
+Get `memo`s' count, used space, .etc
+
+```dart
+var memoSummary = await _notepadClient.getMemoSummary();
+print('getMemoSummary $memoSummary');
+```
+
+### Import a single memo
+
+#### NotepadClient#getMemoInfo
+
+Get the first `memo`'s info from the *FIFO* queue
+
+```dart
+var memoInfo = await _notepadClient.getMemoInfo();
+print('getMemoInfo $memoInfo');
+```
+
+#### NotepadClient#importMemo
+
+Import the first `memo` from the *FIFO* queue
+
+```dart
+await _notepadClient.importMemo((progress) => print('progress $progress'));
+```
+
+#### NotepadClient#deleteMemo
+
+Delete the first `memo` from the *FIFO* queue
+
+```dart
+await _notepadClient.deleteMemo();
+print('deleteMemo complete');
+```
+
 ## Get notepad info
 
 ### Paint Size
@@ -131,7 +179,7 @@ var timestamp = await _notepadClient.getDeviceDate();
 print('getDeviceDate $date');
 
 await _notepadClient.setDeviceDate(timestamp);
-println('setDeviceDate complete');
+print('setDeviceDate complete');
 ```
 
 ### Auto-Lock Time
@@ -141,4 +189,30 @@ var duration = await _notepadClient.getAutoLockTime();
 
 await _notepadClient.setAutoLockTime(duration);
 print('setAutoLockTime complete');
+```
+
+## Upgrade firmware
+
+Upgrade notepad firmware with `*.srec` file
+
+```dart
+await _notepadClient.upgrade(blob, version, (progress) {
+  print("upgrade progress $progress");
+});
+```
+
+## Handle notepad event
+
+- KeyEvent
+- BatteryAlertEvent
+- ChargingStatusEvent
+- StorageAlertEvent
+
+```dart
+_notepadClient.callback = this;
+
+@override
+void handleEvent(NotepadEvent notepadEvent) {
+  print('handleEvent $notepadEvent');
+}
 ```
