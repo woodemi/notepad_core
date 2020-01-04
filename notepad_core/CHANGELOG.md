@@ -1,4 +1,7 @@
-## [1.3.1] - 2019-12-23
+## [1.3.1+1] - 2020-1-4
+- Fix NPE for `NotepadClient.callback` when `handleMessageEvent`
+
+## [1.3.1] - 2020-1-4
 - Fix missing `"disconnected"` message when call `NotepadConnector#disconnect` on Android/iOS
 
 ## [1.3.0] - 2019-12-23
