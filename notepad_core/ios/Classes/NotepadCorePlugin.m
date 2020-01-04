@@ -97,6 +97,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         [_manager cancelPeripheralConnection:_peripheral];
         _peripheral = nil;
         result(nil);
+        [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
     } else if ([call.method isEqualToString:@"discoverServices"]) {
         [_peripheral discoverServices:nil];
         result(nil);
