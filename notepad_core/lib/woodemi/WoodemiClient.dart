@@ -118,9 +118,11 @@ class WoodemiClient extends NotepadClient {
         return AccessResult.Denied;
       case 0x01:
         awaitConfirm(true);
-        var confirm = await notepadType.receiveResponseAsync('Confirm',
-            commandResponseCharacteristic, (value) => value.first == 0x03);
-        return confirm[1] == 0x00 ? AccessResult.Confirmed : AccessResult.Unconfirmed;
+        var receiveConfirmAsync = notepadType.receiveResponseAsync('Confirm',
+          commandResponseCharacteristic, (value) => value.first == 0x03
+        ).then((value) => value[1] == 0x00);
+        var confirm = await receiveConfirmAsync.timeout(Duration(seconds: seconds), onTimeout: () => false);
+        return confirm ? AccessResult.Confirmed : AccessResult.Unconfirmed;
       case 0x02:
         return AccessResult.Approved;
       default:
