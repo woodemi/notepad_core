@@ -109,6 +109,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 connectGatt?.close()
                 connectGatt = null
                 result.success(null)
+                connectorMessage.send(mapOf("ConnectionState" to "disconnected"))
             }
             "discoverServices" -> {
                 connectGatt?.discoverServices()
