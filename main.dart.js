@@ -35881,17 +35881,13 @@ DM:function(a){var u,t,s=this
 P.a8("_handleMessageInput: "+C.E.gbz().a6(a))
 u=(a&&C.i).bf(a,0,2)
 t=[P.i]
-if(S.bW(u,H.b([6,0],t))){if(a[2]===1){t=new D.BO()
-s.b.toString
+if(S.bW(u,H.b([6,0],t))){if(a[2]===1)if(s.b!=null){t=new D.BO()
 P.a8("handleEvent "+t.h(0))
-O.bO("Instance of '"+H.a(H.eX(t))+"'")}}else if(S.bW(u,H.b([6,1],t))){t=new D.wQ()
-s.b.toString
+O.bO("Instance of '"+H.a(H.eX(t))+"'")}}else if(S.bW(u,H.b([6,1],t))){if(s.b!=null){t=new D.wQ()
 P.a8("handleEvent "+t.h(0))
-O.bO("Instance of '"+H.a(H.eX(t))+"'")}else if(S.bW(u,H.b([14,1],t))){t=new D.vY()
-s.b.toString
+O.bO("Instance of '"+H.a(H.eX(t))+"'")}}else if(S.bW(u,H.b([14,1],t))){if(s.b!=null){t=new D.vY()
 P.a8("handleEvent "+t.h(0))
-O.bO("Instance of '"+H.a(H.eX(t))+"'")}else if(S.bW(u,H.b([14,2],t))){t=new D.Ip()
-s.b.toString
+O.bO("Instance of '"+H.a(H.eX(t))+"'")}}else if(S.bW(u,H.b([14,2],t)))if(s.b!=null){t=new D.Ip()
 P.a8("handleEvent "+t.h(0))
 O.bO("Instance of '"+H.a(H.eX(t))+"'")}},
 iI:function(a,b,c){return this.BK(a,b,c)},
