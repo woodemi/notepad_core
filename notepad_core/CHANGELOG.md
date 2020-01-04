@@ -1,3 +1,6 @@
+## [1.3.1] - 2019-12-23
+- Fix missing `"disconnected"` message when call `NotepadConnector#disconnect` on Android/iOS
+
 ## [1.3.0] - 2019-12-23
 
 ### NotepadClient
