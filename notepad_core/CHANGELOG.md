@@ -1,3 +1,6 @@
+## [1.3.1+2] - 2020-1-4
+- Fix pending wait in `WoodemiClient#_checkAccess`
+
 ## [1.3.1+1] - 2020-1-4
 - Fix NPE for `NotepadClient.callback` when `handleMessageEvent`
 

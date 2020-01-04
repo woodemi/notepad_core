@@ -87,7 +87,6 @@ class NotepadConnector {
         if (connectionChangeHandler != null) connectionChangeHandler(_notepadClient, NotepadConnectionState.connected);
       } on AccessException {
         _clean();
-        if (connectionChangeHandler != null) connectionChangeHandler(_notepadClient, NotepadConnectionState.disconnected);
       }
     } else if (connectionState == NotepadConnectionState.disconnected) {
       _clean();
