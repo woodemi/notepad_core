@@ -94,14 +94,14 @@ class WoodemiClient extends NotepadClient {
     var tuple01 = value.sublist(0, 2);
     if (listEquals(tuple01, [0x06, 0x00])) {
       if (value[2] == 0x01)
-        callback.handleEvent(NotepadEvent.KeyEvent(KeyEventType.KeyUp, KeyEventCode.Main));
+        callback?.handleEvent(NotepadEvent.KeyEvent(KeyEventType.KeyUp, KeyEventCode.Main));
     } else if (listEquals(tuple01, [0x06, 0x01])) {
       var type = value[2] == 0x01 ? ChargingStatusEventType.PowerOn : ChargingStatusEventType.PowerOff;
-      callback.handleEvent(NotepadEvent.ChargingStatusEvent(type));
+      callback?.handleEvent(NotepadEvent.ChargingStatusEvent(type));
     } else if (listEquals(tuple01, [0x0E, 0x01])) {
-      callback.handleEvent(NotepadEvent.BatteryAlertEvent());
+      callback?.handleEvent(NotepadEvent.BatteryAlertEvent());
     } else if (listEquals(tuple01, [0x0E, 0x02])) {
-      callback.handleEvent(NotepadEvent.StorageAlertEvent());
+      callback?.handleEvent(NotepadEvent.StorageAlertEvent());
     }
   }
 
