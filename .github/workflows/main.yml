@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: subosito/flutter-action@v1
       - run: cd notepad_core_example && flutter build ios --no-codesign
-  
+
   build-web:
     runs-on: windows-latest
     steps:
@@ -30,3 +30,14 @@ jobs:
         with:
           channel: 'beta'
       - run: flutter config --enable-web; cd notepad_core_example; flutter build web
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'dev'
+      - run: |
+          flutter config --enable-macos-desktop && cd notepad_core_example
+          flutter packages get && flutter build macos
