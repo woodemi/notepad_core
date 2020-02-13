@@ -94,8 +94,9 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         [_manager connectPeripheral:_peripheral options:nil];
         result(nil);
     } else if ([call.method isEqualToString:@"disconnect"]) {
-        [_manager cancelPeripheralConnection:_peripheral];
-        _peripheral = nil;
+        if (_peripheral)
+            [_manager cancelPeripheralConnection:_peripheral];
+        [self clean];
         result(nil);
         [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
     } else if ([call.method isEqualToString:@"discoverServices"]) {
@@ -179,8 +180,12 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         return;
     }
     NSLog(@"centralManager:didDisconnectPeripheral: %@ error: %@", peripheral.identifier, error);
-    _peripheral = nil;
+    [self clean];
     [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
+}
+
+- (void)clean {
+    _peripheral = nil;
 }
 
 # pragma FlutterStreamHandler
