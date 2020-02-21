@@ -1,3 +1,8 @@
+## [1.3.2+1] - 2020-2-21
+- Fix iOS：YES/NO
+- Fix nil peripheral on iOS
+- Refactor uuidStr & some log
+
 ## [1.3.1+2] - 2020-1-4
 - Fix pending wait in `WoodemiClient#_checkAccess`
 
