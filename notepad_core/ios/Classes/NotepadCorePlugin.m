@@ -80,7 +80,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSLog(@"handleMethodCall %@", call.method);
     if ([call.method isEqualToString:@"isBluetoothAvailable"]) {
-        result(@(_manager.state == CBManagerStatePoweredOn));
+        result(@(_manager.state == CBManagerStatePoweredOn ? YES : NO));
     } else if ([call.method isEqualToString:@"startScan"]) {
         [_manager scanForPeripheralsWithServices:nil options:nil];
         result(nil);
