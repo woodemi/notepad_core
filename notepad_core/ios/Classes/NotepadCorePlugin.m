@@ -11,7 +11,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 @end
 
 @implementation CBUUID (Extensions)
-- (NSString *)uuidStr {
+- (NSString *)uuidString {
     return self.UUIDString.lowercaseString;
 }
 @end
@@ -24,13 +24,13 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 @implementation CBPeripheral (Extensions)
 - (CBCharacteristic *)getCharacteristic:(NSString *)characteristic ofService:(NSString *)service {
     NSUInteger serviceIndex = [self.services indexOfObjectPassingTest:^BOOL(CBService *obj, NSUInteger idx, BOOL *stop) {
-        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidStr, GSS_SUFFIX];
-        return [obj.UUID.uuidStr isEqualToString:service] || [withGss isEqualToString:service];
+        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidString, GSS_SUFFIX];
+        return [obj.UUID.uuidString isEqualToString:service] || [withGss isEqualToString:service];
     }];
     NSArray<CBCharacteristic *> *characteristics = self.services[serviceIndex].characteristics;
     NSUInteger characteristicIndex = [characteristics indexOfObjectPassingTest:^BOOL(CBCharacteristic *obj, NSUInteger idx, BOOL *stop) {
-        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidStr, GSS_SUFFIX];
-        return [obj.UUID.uuidStr isEqualToString:characteristic] || [withGss isEqualToString:characteristic];
+        NSString *withGss = [NSString stringWithFormat:@"0000%@-%@", obj.UUID.uuidString, GSS_SUFFIX];
+        return [obj.UUID.uuidString isEqualToString:characteristic] || [withGss isEqualToString:characteristic];
     }];
     return characteristics[characteristicIndex];
 }
@@ -80,7 +80,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     NSLog(@"handleMethodCall %@", call.method);
     if ([call.method isEqualToString:@"isBluetoothAvailable"]) {
-        result(@(_manager.state == CBManagerStatePoweredOn ? YES : NO));
+        result(@(_manager.state == CBManagerStatePoweredOn));
     } else if ([call.method isEqualToString:@"startScan"]) {
         [_manager scanForPeripheralsWithServices:nil options:nil];
         result(nil);
@@ -94,9 +94,8 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         [_manager connectPeripheral:_peripheral options:nil];
         result(nil);
     } else if ([call.method isEqualToString:@"disconnect"]) {
-        if (_peripheral)
-            [_manager cancelPeripheralConnection:_peripheral];
-        [self clean];
+        [_manager cancelPeripheralConnection:_peripheral];
+        _peripheral = nil;
         result(nil);
         [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
     } else if ([call.method isEqualToString:@"discoverServices"]) {
@@ -180,12 +179,8 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         return;
     }
     NSLog(@"centralManager:didDisconnectPeripheral: %@ error: %@", peripheral.identifier, error);
-    [self clean];
-    [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
-}
-
-- (void)clean {
     _peripheral = nil;
+    [_connectorMessage sendMessage:@{@"ConnectionState": @"disconnected"}];
 }
 
 # pragma FlutterStreamHandler
@@ -233,7 +228,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         return;
     }
     for (CBCharacteristic *characteristic in service.characteristics) {
-        NSLog(@"peripheral:didDiscoverCharacteristicsForService (%@, %@)", service.UUID.uuidStr, characteristic.UUID.uuidStr);
+        NSLog(@"peripheral:didDiscoverCharacteristicsForService (%@, %@)", service.UUID.uuidString, characteristic.UUID.uuidString);
     }
     dispatch_group_leave(_serviceConfigGroup);
 }
@@ -244,7 +239,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         return;
     }
     NSLog(@"peripheral:didUpdateNotificationStateFor %@ %d", characteristic.UUID, characteristic.isNotifying);
-    [_clientMessage sendMessage:@{@"characteristicConfig": characteristic.UUID.uuidStr}];
+    [_clientMessage sendMessage:@{@"characteristicConfig": characteristic.UUID.uuidString}];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
@@ -252,7 +247,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSLog(@"Probably MEMORY LEAK!");
         return;
     }
-    NSLog(@"peripheral:didWriteValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidStr, characteristic.value, error);
+    NSLog(@"peripheral:didWriteValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidString, characteristic.value, error);
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
@@ -260,9 +255,9 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         NSLog(@"Probably MEMORY LEAK!");
         return;
     }
-    NSLog(@"peripheral:didUpdateValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidStr, characteristic.value, error);
+    NSLog(@"peripheral:didUpdateValueForCharacteristic %@ %@ error: %@", characteristic.UUID.uuidString, characteristic.value, error);
     NSDictionary *characteristicValue = @{
-            @"characteristic": characteristic.UUID.uuidStr,
+            @"characteristic": characteristic.UUID.uuidString,
             @"value": [FlutterStandardTypedData typedDataWithBytes:characteristic.value],
     };
     [_clientMessage sendMessage:@{@"characteristicValue": characteristicValue}];
