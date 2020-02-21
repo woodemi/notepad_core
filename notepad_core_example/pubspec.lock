@@ -124,10 +124,17 @@ packages:
   notepad_core:
     dependency: "direct main"
     description:
-      name: notepad_core
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core"
+      relative: true
+    source: path
     version: "1.3.2+2"
+  notepad_core_macos:
+    dependency: transitive
+    description:
+      path: "../notepad_core_macos"
+      relative: true
+    source: path
+    version: "0.0.1"
   notepad_core_platform_interface:
     dependency: transitive
     description:
@@ -261,3 +268,4 @@ packages:
     version: "3.5.0"
 sdks:
   dart: ">=2.4.0 <3.0.0"
+  flutter: ">=1.10.0 <2.0.0"
