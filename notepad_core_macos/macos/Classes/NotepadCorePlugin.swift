@@ -2,6 +2,8 @@ import Cocoa
 import CoreBluetooth
 import FlutterMacOS
 
+let GATT_HEADER_LENGTH = 3
+
 let GSS_SUFFIX = "0000-1000-8000-00805f9b34fb"
 
 extension CBUUID {
@@ -95,6 +97,14 @@ public class NotepadCorePlugin: NSObject, FlutterPlugin {
                 return
             }
             peripheral?.setNotifiable(bleInputProperty, for: characteristic, of: service)
+            result(nil)
+        case "requestMtu":
+            let mtu = peripheral!.maximumWriteValueLength(for: .withoutResponse)
+            result(nil)
+            print("peripheral.maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse \(mtu)")
+            clientMessage.sendMessage(["mtuConfig": mtu + GATT_HEADER_LENGTH])
+        case "requestConnectionPriority":
+            // Ignore API for Android
             result(nil)
         case "readValue":
             guard let arguments = call.arguments as? Dictionary<String, Any>,
