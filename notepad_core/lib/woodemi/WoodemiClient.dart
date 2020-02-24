@@ -332,7 +332,7 @@ class WoodemiClient extends NotepadClient {
   @override
   Future<MemoData> importMemo(void progress(int)) async {
     Tuple2<MemoInfo, Uint8List> tuple = await importImageData(progress);
-    return MemoData(tuple.item1, parseMemo(tuple.item2, tuple.item1.createdAt));
+    return MemoData(tuple.item1, parseMemo(tuple.item2, tuple.item1.createdAt).toList());
   }
 
   /// Memo is kind of LargeData, transferred in data structure [ImageTransmission]
@@ -352,25 +352,22 @@ class WoodemiClient extends NotepadClient {
   }
 
   @visibleForTesting
-  List<NotePenPointer> parseMemo(Uint8List bytes, int createdAt) {
+  Iterable<NotePenPointer> parseMemo(Uint8List bytes, int createdAt) sync* {
     var byteParts = partition(bytes, 6);
     var start = createdAt;
-    var pointers = List<NotePenPointer>();
     for (var byteList in byteParts) {
       var byteData = Uint8List.fromList(byteList).buffer.asByteData();
       if (byteList[4] == 0xFF && byteList[5] == 0xFF) {
         start = byteData.getUint32(0, Endian.little);
       } else {
-        pointers.add(NotePenPointer(
+        yield NotePenPointer(
           byteData.getUint16(0, Endian.little),
           byteData.getUint16(2, Endian.little),
-          start,
+          start += SAMPLE_INTERVAL_MS,
           byteData.getUint16(4, Endian.little),
-        ));
-        start += SAMPLE_INTERVAL_MS;
+        );
       }
     }
-    return pointers;
   }
 
   /// +---------------------------------+
