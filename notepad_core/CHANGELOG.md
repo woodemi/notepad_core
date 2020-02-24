@@ -1,3 +1,6 @@
+## [1.3.2+2] - 2020-2-24
+- Fix iOS：BOOL(YES/NO)
+
 ## [1.3.2+1] - 2020-2-21
 - Fix iOS：YES/NO
 - Fix nil peripheral on iOS
