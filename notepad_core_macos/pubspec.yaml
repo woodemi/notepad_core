@@ -1,10 +1,11 @@
 name: notepad_core_macos
 description: Flutter plugin macos implementation for connect & operate on BLE peripheral.
-version: 0.0.1
+version: 1.4.0
 homepage: https://github.com/woodemi/notepad_core/tree/master/notepad_core_macos
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
+  flutter: ">=1.10.0 <2.0.0"
 
 dependencies:
   flutter:
