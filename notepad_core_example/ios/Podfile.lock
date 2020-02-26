@@ -2,12 +2,15 @@ PODS:
   - Flutter (1.0.0)
   - notepad_core (0.0.1):
     - Flutter
+  - notepad_core_macos (0.0.1):
+    - Flutter
   - notepad_core_web (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - notepad_core (from `.symlinks/plugins/notepad_core/ios`)
+  - notepad_core_macos (from `.symlinks/plugins/notepad_core_macos/ios`)
   - notepad_core_web (from `.symlinks/plugins/notepad_core_web/ios`)
 
 EXTERNAL SOURCES:
@@ -15,12 +18,15 @@ EXTERNAL SOURCES:
     :path: Flutter
   notepad_core:
     :path: ".symlinks/plugins/notepad_core/ios"
+  notepad_core_macos:
+    :path: ".symlinks/plugins/notepad_core_macos/ios"
   notepad_core_web:
     :path: ".symlinks/plugins/notepad_core_web/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   notepad_core: c1035346a4acc276e4d6c6e3d976dd38e4df3f1a
+  notepad_core_macos: d0ba61b267175fd988dd3b798331cebddde0d03f
   notepad_core_web: 3cf58882a33b51cc49f5e3061b6db3b54dc06670
 
 PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
