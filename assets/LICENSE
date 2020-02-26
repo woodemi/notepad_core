@@ -10593,6 +10593,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 --------------------------------------------------------------------------------
 notepad_core
+notepad_core_macos
 notepad_core_platform_interface
 notepad_core_web
 
