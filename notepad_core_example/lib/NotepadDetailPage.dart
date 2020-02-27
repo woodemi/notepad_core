@@ -268,14 +268,13 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
           child: Text('getVersionInfo'),
           onPressed: () async {
             VersionInfo version = await _notepadClient.getVersionInfo();
-            _toast(
-                'version.hardware = ${version.hardware.major}  version.software = ${version.hardware.minor} version.software = ${version.software.major} version.software = ${version.software.minor} version.software = ${version.software.patch}');
+            _toast('getVersionInfo ${version.software.description}');
           },
         ),
         RaisedButton(
           child: Text('upgrade'),
           onPressed: () async {
-            var upgradeBlob = await _loadUpgradeFile(Version(1, 0, 0));
+            var upgradeBlob = await _loadUpgradeFile(Version(1, 1, 0));
             await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF), (progress) {
               print('upgrade progress $progress');
             });
@@ -293,12 +292,18 @@ Future<Uint8List> _loadUpgradeFile(Version version) async {
 }
 
 Future<String> _getUserServiceUrl() async {
+  print('getUserServiceUrl');
   var response = await http.get('https://service.36notes.com/v2/config/info');
+  print('response ${response.body}');
   return json.decode(response.body)['data']['entities'][0]['userServiceUrl'];
 }
 
 Future<String> _getAppUrl(String userServiceUrl, Version version) async {
+  print('_getAppUrl');
   var appVer = '${version.major}.${version.minor ?? 0}.${version.patch ?? 0}';
-  var response = await http.get('$userServiceUrl/config/nxpUpdate?appVer=$appVer');
+  var url = '$userServiceUrl/config/nxpUpdate?appVer=$appVer';
+  print('_getAppUrl url = $url');
+  var response = await http.get(url);
+  print('response ${response.body}');
   return json.decode(response.body)['data']['appUrl'];
 }
