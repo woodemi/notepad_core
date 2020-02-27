@@ -1,3 +1,9 @@
+## [1.4.0+1] - 2020-2-27
+- Fix CHANGELOG.md
+
+## [1.4.0] - 2020-2-26
+- Add `notepad_core_macos` for MacOS
+
 ## [1.3.2+2] - 2020-2-24
 - Fix iOS：BOOL(YES/NO)
 
