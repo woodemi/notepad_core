@@ -1,3 +1,6 @@
+## [1.4.1+1] - 2020-3-3
+- Fix iOS `nil` dispatch group
+
 ## [1.4.0+1] - 2020-2-27
 - Fix CHANGELOG.md
 
