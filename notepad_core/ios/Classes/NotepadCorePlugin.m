@@ -236,7 +236,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"peripheral:didDiscoverCharacteristicsForService (%@, %@)", service.UUID.uuidStr, characteristic.UUID.uuidStr);
     }
-    if (_serviceConfigGroup != null) {
+    if (_serviceConfigGroup != nil) {
         dispatch_group_leave(_serviceConfigGroup);
     }
 }
