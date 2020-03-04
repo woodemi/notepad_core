@@ -49,7 +49,7 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Stream<dynamic> get scanResultStream;
 
-  void connect(scanResult);
+  void connect(scanResult, List<String> services);
 
   void disconnect();
 

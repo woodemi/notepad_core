@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'models.dart';
 
 const GATT_HEADER_LENGTH = 3;
 
-const GSS_SUFFIX = "0000-1000-8000-00805f9b34fb";
 const CODE__SERV_BATTERY = "180f";
 const CODE__CHAR_BATTERY_LEVEL = "2a19";
 

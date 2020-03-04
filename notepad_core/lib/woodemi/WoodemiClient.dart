@@ -19,7 +19,7 @@ class WoodemiClient extends NotepadClient {
   static Uint8List get prefix => Uint8List.fromList([0x57, 0x44, 0x4d]); // 'WDM'
 
   static List<String> get optionalServices => [
-    SERV__COMMAND, SERV__SYNC, SERV__FILE_INPUT, SERV__FILE_OUTPUT,
+    ...NotepadClient.commonServices, SERV__COMMAND, SERV__SYNC, SERV__FILE_INPUT, SERV__FILE_OUTPUT,
   ];
 
   @override
@@ -48,6 +48,9 @@ class WoodemiClient extends NotepadClient {
 
   @override
   Tuple2<String, String> get fileOutputCharacteristic => const Tuple2(SERV__FILE_OUTPUT, CHAR__FILE_OUTPUT);
+
+  @override
+  List<String> get services => optionalServices;
 
   @override
   List<Tuple2<String, String>> get inputIndicationCharacteristics => [

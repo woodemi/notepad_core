@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
+import 'models.dart';
 import 'notepad_core_platform_interface.dart';
 
 const _method = const MethodChannel('notepad_core/method');
@@ -47,11 +47,21 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   Stream<dynamic> get scanResultStream => _scanResultStream;
 
   @override
-  void connect(scanResult) {
+  void connect(scanResult, List<String> services) {
     _method.invokeMethod('connect', {
       'deviceId': scanResult.deviceId,
     }).then((_) => print('connect invokeMethod success'));
     if (messageHandler != null) messageHandler(NotepadConnectionState.connecting);
+
+    _discoverService(services);
+  }
+
+  Future<void> _discoverService(List<String> services) async {
+    await _discoverServiceController.stream
+      .where((s) => services.contains(s) || services.contains('0000$s-$GSS_SUFFIX'))
+      .take(services.length)
+      .toList();
+    if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
   }
 
   @override
@@ -60,6 +70,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       print('disconnect invokeMethod success');
     });
   }
+
+  // FIXME close
+  final _discoverServiceController = StreamController<String>.broadcast();
 
   Future<dynamic> _handleConnectorMessage(dynamic message) async {
     print('_handleConnectorMessage $message');
@@ -73,8 +86,10 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
         if (messageHandler != null) messageHandler(connectionState);
       }
     } else if (message['ServiceState'] != null) {
-      if (message['ServiceState'] == 'discovered')
-        if (messageHandler != null) messageHandler(NotepadConnectionState.connected);
+      if (message['ServiceState'] == 'discovered') {
+        List<dynamic> services = message['services'];
+        _discoverServiceController.addStream(Stream.fromIterable(services.cast()));
+      }
     }
   }
 
