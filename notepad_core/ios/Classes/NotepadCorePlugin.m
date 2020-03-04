@@ -48,8 +48,6 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
 @property(nonatomic, strong) NSMutableDictionary<NSString *, CBPeripheral *> *discoveredPeripherals;
 @property(nonatomic, strong) CBPeripheral *peripheral;
 
-@property(nonatomic, strong) dispatch_group_t serviceConfigGroup;
-
 @property(nonatomic, strong) FlutterBasicMessageChannel *connectorMessage;
 @property(nonatomic, strong) FlutterBasicMessageChannel *clientMessage;
 @property(nonatomic, strong) FlutterEventSink scanResultSink;
@@ -217,15 +215,9 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
         return;
     }
     NSLog(@"peripheral: %@ didDiscoverServices: %@", peripheral.identifier, error);
-    _serviceConfigGroup = dispatch_group_create();
     for (CBService *service in peripheral.services) {
-        dispatch_group_enter(_serviceConfigGroup);
         [peripheral discoverCharacteristics:nil forService:service];
     }
-    dispatch_group_notify(_serviceConfigGroup, dispatch_get_main_queue(), ^{
-        self->_serviceConfigGroup = nil;
-        [self->_connectorMessage sendMessage:@{@"ServiceState": @"discovered"}];
-    });
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(nullable NSError *)error {
@@ -236,9 +228,10 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
     for (CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"peripheral:didDiscoverCharacteristicsForService (%@, %@)", service.UUID.uuidStr, characteristic.UUID.uuidStr);
     }
-    if (_serviceConfigGroup != nil) {
-        dispatch_group_leave(_serviceConfigGroup);
-    }
+    [self->_connectorMessage sendMessage:@{
+            @"ServiceState": @"discovered",
+            @"services": @[service.UUID.uuidStr],
+    }];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error {
