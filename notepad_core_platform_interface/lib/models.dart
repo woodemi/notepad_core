@@ -1,3 +1,5 @@
+const GSS_SUFFIX = "0000-1000-8000-00805f9b34fb";
+
 typedef MessageHandler = Future<dynamic> Function(NotepadCoreMessage message);
 
 class NotepadCoreMessage {

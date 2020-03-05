@@ -46,8 +46,6 @@ public class NotepadCorePlugin: NSObject, FlutterPlugin {
     private var discoveredPeripherals: Dictionary<String, CBPeripheral>!
     private var peripheral: CBPeripheral?
 
-    private var serviceConfigGroup: DispatchGroup?
-
     private var scanResultSink: FlutterEventSink?
     private var connectorMessage: FlutterBasicMessageChannel!
     private var clientMessage: FlutterBasicMessageChannel!
@@ -216,14 +214,8 @@ extension NotepadCorePlugin: CBPeripheralDelegate {
             print("Probably MEMORY LEAK!")
             return
         }
-        serviceConfigGroup = DispatchGroup()
         for service in peripheral.services! {
-            serviceConfigGroup?.enter()
             peripheral.discoverCharacteristics(nil, for: service)
-        }
-        serviceConfigGroup?.notify(queue: DispatchQueue.main) {
-            self.serviceConfigGroup = nil
-            self.connectorMessage.sendMessage(["ServiceState": "discovered"])
         }
     }
 
@@ -235,7 +227,10 @@ extension NotepadCorePlugin: CBPeripheralDelegate {
             print("Probably MEMORY LEAK!")
             return
         }
-        serviceConfigGroup?.leave()
+        self.connectorMessage.sendMessage([
+            "ServiceState": "discovered",
+            "services": [service.uuid.uuidStr],
+        ])
     }
 
     public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {

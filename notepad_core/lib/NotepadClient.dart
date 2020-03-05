@@ -25,9 +25,14 @@ abstract class NotepadClient {
     return WoodemiClient();
   }
 
-  static List<String> get optionalServices {
+  static List<String> get commonServices {
     return [
       SERV__BATTERY,
+    ];
+  }
+
+  static List<String> get optionalServiceCollection {
+    return [
       ...WoodemiClient.optionalServices,
     ];
   }
@@ -49,6 +54,8 @@ abstract class NotepadClient {
   Tuple2<String, String> get fileOutputControlResponseCharacteristic;
 
   Tuple2<String, String> get fileOutputCharacteristic;
+
+  List<String> get services;
 
   List<Tuple2<String, String>> get inputIndicationCharacteristics;
 

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 
 import 'Notepad.dart';
+import 'NotepadClient.dart';
 import 'models.dart';
 import 'NotepadClient.dart';
 import 'NotepadType.dart';
@@ -26,7 +27,7 @@ class NotepadConnector {
   Future<dynamic> requestDevice() {
     if (!kIsWeb) throw UnimplementedError('Web platform only for now');
 
-    return NotepadCorePlatform.instance.requestDevice(optionalServices: NotepadClient.optionalServices);
+    return NotepadCorePlatform.instance.requestDevice(optionalServices: NotepadClient.optionalServiceCollection);
   }
 
   void startScan() {
@@ -56,7 +57,7 @@ class NotepadConnector {
     _notepadClient = NotepadClient.create(scanResult);
     _notepadClient.setAuthToken(authToken);
     _notepadType = NotepadType(_notepadClient);
-    NotepadCorePlatform.instance.connect(scanResult);
+    NotepadCorePlatform.instance.connect(scanResult, _notepadClient.services);
   }
 
   void disconnect() {

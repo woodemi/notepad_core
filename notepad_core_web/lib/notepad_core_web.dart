@@ -58,7 +58,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   BluetoothRemoteGATTServer _connectGatt;
 
   @override
-  void connect(scanResult) {
+  void connect(scanResult, List<String> services) {
     (scanResult as BluetoothDevice).gatt.connect().then((result) {
       _connectGatt = result;
       print('onConnectSuccess $_connectGatt, ${_connectGatt.connected}');
