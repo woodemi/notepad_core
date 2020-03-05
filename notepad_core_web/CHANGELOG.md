@@ -1,3 +1,6 @@
+## [1.4.2] - 2020-03-05
+- Compat with `notepad_core_platform_interface` 1.4.2
+
 ## [1.3.0] - 2019-12-23
 
 ### NotepadCorePlugin
