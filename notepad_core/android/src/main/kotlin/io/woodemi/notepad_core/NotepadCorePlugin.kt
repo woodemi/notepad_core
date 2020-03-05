@@ -239,7 +239,12 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 }
             }
 
-            mainThreadHandler.post { connectorMessage.send(mapOf("ServiceState" to "discovered")) }
+            mainThreadHandler.post {
+                connectorMessage.send(mapOf(
+                        "ServiceState" to "discovered",
+                        "services" to gatt!!.services.map { it.uuid.toString() }
+                ))
+            }
         }
 
         override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
