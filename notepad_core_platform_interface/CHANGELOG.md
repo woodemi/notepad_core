@@ -1,3 +1,6 @@
+## [1.4.2] - 2020-03-05
+- Add `services` to `NotepadCorePlatform.connect`
+
 ## [1.3.0] - 2019-12-23
 
 ### NotepadCorePlatform

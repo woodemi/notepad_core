@@ -1,3 +1,6 @@
+## [1.4.2] - 2020-03-05
+- Refactor `discoverServiceGroup` in iOS/macOS with `ServiceState` in Dart
+
 ## [1.4.1+1] - 2020-3-3
 - Fix iOS `nil` dispatch group
 
