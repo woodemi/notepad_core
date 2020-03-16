@@ -5,14 +5,12 @@ homepage: https://github.com/woodemi/notepad_core/tree/master/notepad_core
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
-  flutter: ">=1.10.0 <2.0.0"
+  flutter: ">=1.9.1 <2.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   notepad_core_platform_interface: ^1.4.2
-  notepad_core_web: ^1.4.2
-  notepad_core_macos: ^1.4.2
   convert: ^2.1.1
   quiver: ^2.0.5
 
