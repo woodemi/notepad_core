@@ -237,7 +237,10 @@ class WoodemiClient extends NotepadClient {
       request: Uint8List.fromList([0x08, 0x05]),
       intercept: (value) => value.first == 0x10,
       handle: (value) {
-        var fullValue = Uint8List.fromList(value.toList() + [0, 0]);
+        //  hardvare <= 1.1.1：value = [16, 5, 140, 10, 0]
+        //  hardvare > 1.1.1： value = [16, 5, 140, 10, 0, 0]
+        //  此处兼容<=1.1.1版本
+        var fullValue = Uint8List.fromList(value.toList() + [0]);
         final byteData = fullValue.buffer.asByteData();
         final seconds = byteData.getUint32(2, Endian.little);
         return Duration(seconds: seconds).inMinutes;
