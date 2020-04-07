@@ -1,3 +1,6 @@
+## [1.4.3] - 2020-04-07
+- Fix `getAutoLockTime` when hardware.version = 1.0.5
+
 ## [1.4.2] - 2020-03-05
 - Refactor `discoverServiceGroup` in iOS/macOS with `ServiceState` in Dart
 
