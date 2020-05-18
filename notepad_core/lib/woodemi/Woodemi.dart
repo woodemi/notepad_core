@@ -28,8 +28,12 @@ final defaultAuthToken = Uint8List.fromList([0x00, 0x00, 0x00, 0x01]);
 
 const MTU_WUART = 247;
 
-const A1_WIDTH = 14800;
-const A1_HEIGHT = 21000;
+const UGEE_CN = [0x41, 0x35];
+const UGEE_GLOBAL = [0x41, 0x36];
+const EMRIGHT_CN = [0x41, 0x37];
+
+const WDM_WIDTH = 14800;
+const WDM_HEIGHT = 21000;
 
 const SAMPLE_INTERVAL_MS = 5;
 
