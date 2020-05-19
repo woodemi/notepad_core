@@ -11,6 +11,7 @@ import 'package:quiver/iterables.dart' show partition;
 import '../Notepad.dart';
 import '../NotepadClient.dart';
 import '../models.dart';
+import '../utils.dart';
 import 'FileRecord.dart';
 import 'ImageTransmission.dart';
 import 'Woodemi.dart';
@@ -21,6 +22,17 @@ class WoodemiClient extends NotepadClient {
   static List<String> get optionalServices => [
     ...NotepadClient.commonServices, SERV__COMMAND, SERV__SYNC, SERV__FILE_INPUT, SERV__FILE_OUTPUT,
   ];
+
+  final int sizeScale;
+
+  WoodemiClient._(this.sizeScale);
+
+  factory WoodemiClient.create(Uint8List data) {
+    assert(startWith(data, prefix));
+    var type = data.sublist(3, 5);
+    var isCompact = listEquals(type, UGEE_CN) || listEquals(type, UGEE_GLOBAL);
+    return isCompact ? WoodemiClient._(1) : WoodemiClient._(2);
+  }
 
   @override
   Tuple2<String, String> get commandRequestCharacteristic => const Tuple2(SERV__COMMAND, CHAR__COMMAND_REQUEST);
@@ -154,8 +166,12 @@ class WoodemiClient extends NotepadClient {
   //#endregion
 
   //#region Device Info
+  int get width => WDM_WIDTH * sizeScale;
+
+  int get height => WDM_HEIGHT * sizeScale;
+  
   @override
-  Size getDeviceSize() => Size(A1_WIDTH.toDouble(), A1_HEIGHT.toDouble());
+  Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
 
   @override
   Future<String> getDeviceName() async {
@@ -266,9 +282,14 @@ class WoodemiClient extends NotepadClient {
   @override
   List<NotePenPointer> parseSyncData(Uint8List value) {
     return parseSyncPointer(value).where((pointer) {
-      return 0 <= pointer.x && pointer.x <= A1_WIDTH
-          && 0<= pointer.y && pointer.y <= A1_HEIGHT;
-    }).toList();
+      return 0 <= pointer.x && pointer.x <= width
+          && 0<= pointer.y && pointer.y <= height;
+    }).map((pointer) => new NotePenPointer(
+      pointer.x ~/ sizeScale,
+      pointer.y ~/ sizeScale,
+      pointer.t,
+      pointer.p,
+    )).toList();
   }
   //#endregion
 
@@ -368,8 +389,8 @@ class WoodemiClient extends NotepadClient {
         start = byteData.getUint32(0, Endian.little);
       } else {
         yield NotePenPointer(
-          byteData.getUint16(0, Endian.little),
-          byteData.getUint16(2, Endian.little),
+          byteData.getUint16(0, Endian.little) ~/ sizeScale,
+          byteData.getUint16(2, Endian.little) ~/ sizeScale,
           start += SAMPLE_INTERVAL_MS,
           byteData.getUint16(4, Endian.little),
         );

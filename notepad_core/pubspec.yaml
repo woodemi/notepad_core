@@ -1,6 +1,6 @@
 name: notepad_core
 description: Flutter plugin for connect & operate on smart notepad. Supports android/iOS/Web.
-version: 1.4.3
+version: 1.5.0
 homepage: https://github.com/woodemi/notepad_core/tree/master/notepad_core
 
 environment:
