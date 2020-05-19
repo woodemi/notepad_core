@@ -22,7 +22,7 @@ abstract class NotepadClient {
 
   static NotepadClient create(dynamic scanResult) {
     // FIXME Support both native & web
-    return WoodemiClient();
+    return WoodemiClient.create(scanResult.manufacturerData);
   }
 
   static List<String> get commonServices {
