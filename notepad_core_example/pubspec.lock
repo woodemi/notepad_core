@@ -113,7 +113,7 @@ packages:
       path: "../notepad_core"
       relative: true
     source: path
-    version: "1.4.3"
+    version: "1.5.0"
   notepad_core_macos:
     dependency: transitive
     description:
@@ -131,9 +131,9 @@ packages:
   notepad_core_web:
     dependency: transitive
     description:
-      name: notepad_core_web
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../notepad_core_web"
+      relative: true
+    source: path
     version: "1.4.2"
   path:
     dependency: transitive

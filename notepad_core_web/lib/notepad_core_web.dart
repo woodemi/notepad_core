@@ -17,7 +17,7 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   }
 
   NotepadCorePlugin() {
-    addBluetoothListener(Bluetooth.availabilityEvent, _onAvailabilityChanged);
+    addBluetoothListener(Bluetooth.availabilityEvent, allowInterop(_onAvailabilityChanged));
   }
 
   @override
@@ -34,10 +34,12 @@ class NotepadCorePlugin extends NotepadCorePlatform {
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   }) async {
-    return await bluetooth.requestDevice(ScanOptions(
+    var bluetoothDevice = await bluetooth.requestDevice(ScanOptions(
       optionalServices: optionalServices.map(getServiceUUID).toList(),
       acceptAllDevices: true,
     ));
+    print('requestDevice ${bluetoothDevice.getProperty('advertiseData')}');
+    return bluetoothDevice;
   }
 
   @override
