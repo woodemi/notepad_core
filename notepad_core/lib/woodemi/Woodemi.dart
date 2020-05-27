@@ -44,7 +44,7 @@ const EMRIGHT_CN = [0x41, 0x37];
  */
 class WoodemiType {
   static const A1 = WoodemiType._(14800, 21000, 1, 0, 0, 1);
-  static const A1P = WoodemiType._(30000, 42400, 2, 100, 100, 4);
+  static const A1P = WoodemiType._(30000, 42400, 2, 200, 200, 4);
 
   final int widthOutline;
   final int heightOutline;
