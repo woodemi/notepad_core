@@ -1,5 +1,8 @@
-## [1.5.0] - 2020-04-07
-- Support `WDM-A2` notepad
+## [1.5.0+1] - 2020-05-27
+- Fix `WDM-A1P` padding & pressure
+
+## [1.5.0] - 2020-05-19
+- Support `WDM-A1P` notepad
 
 ## [1.4.3] - 2020-04-07
 - Fix `getAutoLockTime` when hardware.version = 1.0.5

@@ -23,15 +23,15 @@ class WoodemiClient extends NotepadClient {
     ...NotepadClient.commonServices, SERV__COMMAND, SERV__SYNC, SERV__FILE_INPUT, SERV__FILE_OUTPUT,
   ];
 
-  final int sizeScale;
+  final WoodemiType woodemiType;
 
-  WoodemiClient._(this.sizeScale);
+  WoodemiClient._(this.woodemiType);
 
   factory WoodemiClient.create(Uint8List data) {
     assert(startWith(data, prefix));
     var type = data.sublist(3, 5);
     var isCompact = listEquals(type, UGEE_CN) || listEquals(type, UGEE_GLOBAL);
-    return isCompact ? WoodemiClient._(1) : WoodemiClient._(2);
+    return isCompact ? WoodemiClient._(WoodemiType.A1) : WoodemiClient._(WoodemiType.A1P);
   }
 
   @override
@@ -166,9 +166,9 @@ class WoodemiClient extends NotepadClient {
   //#endregion
 
   //#region Device Info
-  int get width => WDM_WIDTH * sizeScale;
+  int get width => (woodemiType.right - woodemiType.left) ~/ woodemiType.scale;
 
-  int get height => WDM_HEIGHT * sizeScale;
+  int get height => (woodemiType.bottom - woodemiType.top) ~/ woodemiType.scale;
   
   @override
   Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
@@ -281,15 +281,12 @@ class WoodemiClient extends NotepadClient {
 
   @override
   List<NotePenPointer> parseSyncData(Uint8List value) {
-    return parseSyncPointer(value).where((pointer) {
-      return 0 <= pointer.x && pointer.x <= width
-          && 0<= pointer.y && pointer.y <= height;
-    }).map((pointer) => new NotePenPointer(
-      pointer.x ~/ sizeScale,
-      pointer.y ~/ sizeScale,
-      pointer.t,
-      pointer.p,
-    )).toList();
+    return parseSyncPointer(value).map((pointer) {
+      var x = max(woodemiType.left, min(pointer.x, woodemiType.right)) - woodemiType.left ~/ woodemiType.scale;
+      var y = max(woodemiType.top, min(pointer.y, woodemiType.bottom)) - woodemiType.top ~/ woodemiType.scale;
+      var p = pointer.p ~/ woodemiType.pScale;
+      return new NotePenPointer(x, y, pointer.t, p);
+    }).toList();
   }
   //#endregion
 
@@ -388,12 +385,13 @@ class WoodemiClient extends NotepadClient {
       if (byteList[4] == 0xFF && byteList[5] == 0xFF) {
         start = byteData.getUint32(0, Endian.little);
       } else {
-        yield NotePenPointer(
-          byteData.getUint16(0, Endian.little) ~/ sizeScale,
-          byteData.getUint16(2, Endian.little) ~/ sizeScale,
-          start += SAMPLE_INTERVAL_MS,
-          byteData.getUint16(4, Endian.little),
-        );
+        var originX = byteData.getUint16(0, Endian.little);
+        var originY = byteData.getUint16(2, Endian.little);
+        var originP = byteData.getUint16(4, Endian.little);
+        var x = max(woodemiType.left, min(originX, woodemiType.right)) - woodemiType.left ~/ woodemiType.scale;
+        var y = max(woodemiType.top, min(originY, woodemiType.bottom)) - woodemiType.top ~/ woodemiType.scale;
+        var p = originP ~/ woodemiType.pScale;
+        yield NotePenPointer(x, y, start += SAMPLE_INTERVAL_MS, p);
       }
     }
   }
