@@ -32,8 +32,35 @@ const UGEE_CN = [0x41, 0x35];
 const UGEE_GLOBAL = [0x41, 0x36];
 const EMRIGHT_CN = [0x41, 0x37];
 
-const WDM_WIDTH = 14800;
-const WDM_HEIGHT = 21000;
+/**
+ * +---A1P--+
+ * |        |
+ * |  +A1+  |
+ * |  |  |  |
+ * |  |  |  |
+ * |  +--+  |
+ * |        |
+ * +--------+
+ */
+class WoodemiType {
+  static const A1 = WoodemiType._(14800, 21000, 1, 0, 0, 1);
+  static const A1P = WoodemiType._(30000, 42400, 2, 100, 100, 4);
+
+  final int widthOutline;
+  final int heightOutline;
+  final int scale;
+  final int widthPadding;
+  final int heightPadding;
+  final int pScale;
+
+  const WoodemiType._(this.widthOutline, this.heightOutline, this.scale, this.widthPadding, this.heightPadding, this.pScale);
+
+  int get left => widthPadding;
+  int get right => widthOutline - widthPadding;
+ 
+  int get top => widthPadding;
+  int get bottom => heightOutline - heightPadding;
+}
 
 const SAMPLE_INTERVAL_MS = 5;
 
