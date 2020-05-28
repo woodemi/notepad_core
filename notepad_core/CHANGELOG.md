@@ -1,3 +1,6 @@
+## [1.5.0+2] - 2020-05-27
+- Fix padding typo
+
 ## [1.5.0+1] - 2020-05-27
 - Fix `WDM-A1P` padding & pressure
 
