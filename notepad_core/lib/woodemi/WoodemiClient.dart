@@ -166,9 +166,9 @@ class WoodemiClient extends NotepadClient {
   //#endregion
 
   //#region Device Info
-  int get width => woodemiType.widthOutline;
+  int get width => woodemiType.width;
 
-  int get height => woodemiType.heightOutline;
+  int get height => woodemiType.height;
   
   @override
   Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
@@ -282,7 +282,10 @@ class WoodemiClient extends NotepadClient {
   @override
   List<NotePenPointer> parseSyncData(Uint8List value) {
     return parseSyncPointer(value).map((pointer) {
-      return new NotePenPointer(pointer.x, pointer.y, pointer.t, pointer.p ~/ woodemiType.pScale);
+      var originX = (woodemiType.originX + pointer.x) * woodemiType.sizeScale().toInt();
+      var originY = (woodemiType.originY + pointer.y) * woodemiType.sizeScale().toInt();
+      var originP = pointer.p * woodemiType.sizeScale().toInt();
+      return new NotePenPointer(originX, originY, pointer.t, originP);
     }).toList();
   }
   //#endregion
@@ -382,10 +385,13 @@ class WoodemiClient extends NotepadClient {
       if (byteList[4] == 0xFF && byteList[5] == 0xFF) {
         start = byteData.getUint32(0, Endian.little);
       } else {
-        var originX = byteData.getUint16(0, Endian.little);
-        var originY = byteData.getUint16(2, Endian.little);
-        var originP = byteData.getUint16(4, Endian.little);
-        yield NotePenPointer(originX, originY, start += SAMPLE_INTERVAL_MS, originP ~/ woodemiType.pScale);
+        var x = byteData.getUint16(0, Endian.little);
+        var y = byteData.getUint16(2, Endian.little);
+        var p = byteData.getUint16(4, Endian.little);
+        var originX = (woodemiType.originX + x) * woodemiType.sizeScale().toInt();
+        var originY = (woodemiType.originY + y) * woodemiType.sizeScale().toInt();
+        var originP = p * woodemiType.sizeScale().toInt();
+        yield NotePenPointer(originX, originY, start += SAMPLE_INTERVAL_MS, originP);
       }
     }
   }
