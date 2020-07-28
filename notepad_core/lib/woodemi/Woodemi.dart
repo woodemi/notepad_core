@@ -43,23 +43,19 @@ const EMRIGHT_CN = [0x41, 0x37];
  * +--------+
  */
 class WoodemiType {
-  static const A1 = WoodemiType._(14800, 21000, 1, 0, 0, 1);
-  static const A1P = WoodemiType._(30000, 42400, 2, 200, 200, 4);
+  static const A1 = WoodemiType._(0, 0, 14800, 21000, 512);
+  static const A1P = WoodemiType._(-500, 0, 14800, 21000, 2048);
 
-  final int widthOutline;
-  final int heightOutline;
-  final int scale;
-  final int widthPadding;
-  final int heightPadding;
-  final int pScale;
+  final int originX;
+  final int originY;
+  final int width;
+  final int height;
+  final int pressure;
 
-  const WoodemiType._(this.widthOutline, this.heightOutline, this.scale, this.widthPadding, this.heightPadding, this.pScale);
+  const WoodemiType._(this.originX, this.originY, this.width, this.height, this.pressure);
 
-  int get left => widthPadding;
-  int get right => widthOutline - widthPadding;
- 
-  int get top => widthPadding;
-  int get bottom => heightOutline - heightPadding;
+  double sizeScale() => 14800.0 / width;
+  double pressureScale() => 512.0 / pressure;
 }
 
 const SAMPLE_INTERVAL_MS = 5;

@@ -48,7 +48,7 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
   @override
   void handlePointer(List<NotePenPointer> list) {
     for (var p in list) {
-      print('handlePointer ${p.x}, ${p.y}');
+      print('handlePointer ${p.x}, ${p.y}, ${p.p}');
     }
   }
 
