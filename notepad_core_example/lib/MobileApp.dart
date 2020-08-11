@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
+import 'package:notepad_core_example/permission.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'NotepadDetailPage.dart';
 
@@ -79,8 +82,11 @@ class _MobileHomePageState extends State<_MobileHomePage> {
       children: <Widget>[
         RaisedButton(
           child: Text('startScan'),
-          onPressed: () {
-            notepadConnector.startScan();
+          onPressed: () async {
+            var b = await checkAndRequest(PermissionGroup.location);
+            if (b) {
+              notepadConnector.startScan();
+            }
           },
         ),
         RaisedButton(

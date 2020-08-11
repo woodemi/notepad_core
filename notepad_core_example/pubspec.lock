@@ -163,6 +163,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.9.0"
+  permission_handler:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "7333309370afec4de4745c0f2f3792117d9650fa"
+      url: "https://github.com/woodemi/flutter-permission-handler.git"
+    source: git
+    version: "4.0.3"
   petitparser:
     dependency: transitive
     description:
