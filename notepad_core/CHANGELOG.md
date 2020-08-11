@@ -1,3 +1,6 @@
+## [1.5.0+5] - 2020-08-11
+- Fix hacking method `FIXME onAttachedToEngine may twice`, Adapt to flutter 1.12+
+
 ## [1.5.0+4] - 2020-07-28
 - Fix WDM A1-Pro
 
