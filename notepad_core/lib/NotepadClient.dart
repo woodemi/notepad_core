@@ -64,11 +64,10 @@ abstract class NotepadClient {
   NotepadType notepadType;
 
   Future<void> completeConnection(void awaitConfirm(bool)) {
-    // TODO Cancel
-    notepadType.receiveSyncInput().listen((value) {
-      callback?.handlePointer(parseSyncData(value));
-    });
+
   }
+
+  Future<void> clear() {}
 
   NotepadClientCallback callback;
 

@@ -1,3 +1,6 @@
+## [1.5.0+6] - 2020-08-26
+- Add _notepadClient.clear()
+
 ## [1.5.0+5] - 2020-08-11
 - Fix hacking method `FIXME onAttachedToEngine may twice`, Adapt to flutter 1.12+
 
