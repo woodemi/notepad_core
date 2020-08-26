@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -89,19 +90,49 @@ class WoodemiClient extends NotepadClient {
         break;
     }
 
-    await super.completeConnection(awaitConfirm);
     await notepadType.configMtu(MTU_WUART);
+    _configSyncInput();
     _configMessageInput();
   }
 
+  @override
+  Future<void> clear() {
+    _clearSyncInput();
+    _clearMessageIput();
+  }
+
+  StreamSubscription<Uint8List> _receiveSyncInputSubscription = null;
+
+  void _configSyncInput() {
+    _clearSyncInput();
+    _receiveSyncInputSubscription =
+        notepadType.receiveSyncInput().listen((value) {
+          callback?.handlePointer(parseSyncData(value));
+        });
+  }
+
+  void _clearSyncInput() {
+    _receiveSyncInputSubscription?.cancel();
+    _receiveSyncInputSubscription = null;
+  }
+
+  StreamSubscription<Uint8List> _receiveMessageInputSubscription = null;
+
   void _configMessageInput() {
-    notepadType.receiveValue(commandResponseCharacteristic)
+    _clearMessageIput();
+    _receiveMessageInputSubscription = notepadType
+        .receiveValue(commandResponseCharacteristic)
         .where((value) => value.first == 0x06 || value.first == 0x0E)
         .map((value) {
           print('onMessageInputReceive ${hex.encode(value)}');
           return value;
         })
         .listen(_handleMessageInput);
+  }
+
+  void _clearMessageIput() {
+    _receiveMessageInputSubscription?.cancel();
+    _receiveMessageInputSubscription = null;
   }
 
   void _handleMessageInput(Uint8List value) {
@@ -169,7 +200,7 @@ class WoodemiClient extends NotepadClient {
   int get width => woodemiType.width;
 
   int get height => woodemiType.height;
-  
+
   @override
   Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
 
