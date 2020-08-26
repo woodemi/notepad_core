@@ -6,7 +6,6 @@ import 'package:notepad_core_platform_interface/notepad_core_platform_interface.
 import 'Notepad.dart';
 import 'NotepadClient.dart';
 import 'models.dart';
-import 'NotepadClient.dart';
 import 'NotepadType.dart';
 
 typedef BluetoothChangeHandler = void Function(BluetoothState state);
@@ -99,6 +98,7 @@ class NotepadConnector {
 
   // FIXME Listen to connection change
   void _clean() {
+    _notepadClient?.clear();
     _notepadClient = null;
     _notepadType = null;
   }
