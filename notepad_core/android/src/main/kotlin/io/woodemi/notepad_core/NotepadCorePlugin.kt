@@ -21,9 +21,12 @@ import java.util.*
 
 const val TAG = "NotepadCorePlugin"
 
+private var initCount = 0
+
 /** NotepadCorePlugin */
 class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, Closeable {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        if (initCount++ < 1) return // FIXME onAttachedToEngine may twice
         init(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
 
