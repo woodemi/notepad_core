@@ -1,3 +1,6 @@
+## [1.5.0+7] - 2020-08-26
+- Fix iOS DevieName
+
 ## [1.5.0+6] - 2020-08-26
 - Add _notepadClient.clear()
 
