@@ -157,7 +157,7 @@ NSString *GSS_SUFFIX = @"0000-1000-8000-00805f9b34fb";
     NSData *manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey];
     if (_scanResultSink)
         _scanResultSink(@{
-                @"name": peripheral.name ? peripheral.name : @"",
+                @"name": advertisementData[@"kCBAdvDataLocalName"] != nil ? advertisementData[@"kCBAdvDataLocalName"] : peripheral.name ? peripheral.name : @"",
                 @"deviceId": peripheral.identifier.UUIDString,
                 @"manufacturerData": [FlutterStandardTypedData typedDataWithBytes:(manufacturerData ? manufacturerData : [NSData new])],
                 @"rssi": RSSI,
