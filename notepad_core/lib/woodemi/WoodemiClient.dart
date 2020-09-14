@@ -247,7 +247,7 @@ class WoodemiClient extends NotepadClient {
     final command = WoodemiCommand(
       request: Uint8List.fromList([0x08, 0x01]),
       intercept: (value) => value.first == 0x0C,
-      handle: (value) => value.buffer.asByteData().getUint32(2, Endian.little),
+      handle: (value) => value.buffer.asByteData().getUint32(1, Endian.little),
     );
     return await notepadType.executeCommand(command);
   }
