@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:tf_toast/Toast.dart';
 
 class NotepadDetailPage extends StatefulWidget {
   final scanResult;
@@ -17,9 +18,10 @@ class NotepadDetailPage extends StatefulWidget {
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 _toast(String msg) => _scaffoldKey.currentState
-  .showSnackBar(SnackBar(content: Text(msg), duration: Duration(seconds: 2)));
+    .showSnackBar(SnackBar(content: Text(msg), duration: Duration(seconds: 2)));
 
-class _NotepadDetailPageState extends State<NotepadDetailPage> implements NotepadClientCallback {
+class _NotepadDetailPageState extends State<NotepadDetailPage>
+    implements NotepadClientCallback {
   @override
   void initState() {
     super.initState();
@@ -33,8 +35,9 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
   }
 
   NotepadClient _notepadClient;
-  
-  void _handleConnectionChange(NotepadClient client, NotepadConnectionState state) {
+
+  void _handleConnectionChange(
+      NotepadClient client, NotepadConnectionState state) {
     print('_handleConnectionChange $client $state');
     if (state == NotepadConnectionState.connected) {
       _notepadClient = client;
@@ -73,7 +76,8 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
               RaisedButton(
                 child: Text('connect'),
                 onPressed: () {
-                  notepadConnector.connect(widget.scanResult, Uint8List.fromList([0x00, 0x00, 0x00, 0x02]));
+                  notepadConnector.connect(widget.scanResult,
+                      Uint8List.fromList([0x00, 0x00, 0x00, 0x02]));
                 },
               ),
               RaisedButton(
@@ -90,7 +94,13 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               RaisedButton(
-                child: Text('setMode'),
+                child: Text('setMode(COMMON)'),
+                onPressed: () async {
+                  await _notepadClient.setMode(NotepadMode.Common);
+                },
+              ),
+              RaisedButton(
+                child: Text('setMode(SYNC)'),
                 onPressed: () async {
                   await _notepadClient.setMode(NotepadMode.Sync);
                 },
@@ -173,7 +183,8 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
             child: Text('getBatteryInfo'),
             onPressed: () async {
               BatteryInfo battery = await _notepadClient.getBatteryInfo();
-              _toast('battery.percent = ${battery.percent}  battery.charging = ${battery.charging}');
+              _toast(
+                  'battery.percent = ${battery.percent}  battery.charging = ${battery.charging}');
             },
           ),
         ],
@@ -184,14 +195,15 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
           RaisedButton(
             child: Text('getDeviceDate'),
             onPressed: () async {
-              _toast('date = ${await _notepadClient.getDeviceDate()}');
+              var date = await _notepadClient.getDeviceDate();
+              _toast('date = ${date}');
             },
           ),
           RaisedButton(
             child: Text('setDeviceDate'),
             onPressed: () async => {
               await _notepadClient.setDeviceDate(0), // second
-              _toast('new DeivceDate = ${await _notepadClient.getDeviceDate()}'),
+              _toast('new DeivceDate = 0，即北京时间：1970-01-01 08:00:00}'),
             },
           ),
         ],
@@ -200,15 +212,24 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           RaisedButton(
-            child: Text('getAutoLockTime'),
-            onPressed: () async => _toast(
-                'AutoLockTime = ${await _notepadClient.getAutoLockTime()}'),
-          ),
+              child: Text('getAutoLockTime'),
+              onPressed: () async {
+                try {
+                  _toast(
+                      'AutoLockTime = ${await _notepadClient.getAutoLockTime()}分钟');
+                } catch (e) {
+                  Toast.fail(context, title: e.toString());
+                }
+              }),
           RaisedButton(
             child: Text('setAutoLockTime'),
-            onPressed: () async => {
-              await _notepadClient.setAutoLockTime(10),
-              _toast('new AutoLockTime = ${await _notepadClient.getAutoLockTime()}')
+            onPressed: () async {
+              try {
+                await _notepadClient.setAutoLockTime(11);
+                _toast('new AutoLockTime = 11分钟');
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
             },
           ),
         ],
@@ -217,22 +238,32 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
   }
 
   List<Widget> _buildImportMemoButtons() {
-    return <Widget> [
+    return <Widget>[
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           RaisedButton(
             child: Text('getMemoSummary'),
             onPressed: () async {
-              var memoSummary = await _notepadClient.getMemoSummary();
-              print('getMemoSummary $memoSummary');
+              try {
+                var memoSummary = await _notepadClient.getMemoSummary();
+                print('${memoSummary.toString()}');
+                _toast('getMemoSummary ${memoSummary.toString()}');
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
             },
           ),
           RaisedButton(
             child: Text('getMemoInfo'),
             onPressed: () async {
-              var memoInfo = await _notepadClient.getMemoInfo();
-              print('getMemoInfo $memoInfo');
+              try {
+                var memoInfo = await _notepadClient.getMemoInfo();
+                _toast('getMemoInfo ${memoInfo.toString()}');
+                print('${memoInfo.toString()}');
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
             },
           ),
         ],
@@ -243,18 +274,59 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
           RaisedButton(
             child: Text('importMemo'),
             onPressed: () async {
-              var memoData = await _notepadClient
-                  .importMemo((progress) => print('progress $progress'));
-              print('importMemo finish');
-              memoData.pointers.forEach((p) async {
-                print('memoData x = ${p.x}\ty = ${p.y}\tt = ${p.t}\tp = ${p.p}');
-              });
+              try {
+                var memoData = await _notepadClient.importMemo((progress) =>
+                    Toast.loading(context,
+                        title: 'importMemo progress $progress'));
+                Toast.success(context,
+                    title:
+                        'importMemo finish, 有效点共计${memoData.pointers.length}个点');
+                memoData.pointers.forEach((p) async {
+                  print(
+                      'memoData x = ${p.x}\ty = ${p.y}\tt = ${p.t}\tp = ${p.p}');
+                });
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
             },
           ),
           RaisedButton(
             child: Text('deleteMemo'),
-            onPressed: () {
-              _notepadClient.deleteMemo();
+            onPressed: () async {
+              try {
+                await _notepadClient.deleteMemo();
+                _toast('deleteMemo success');
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
+            },
+          ),
+          RaisedButton(
+            child: Text('importAllMemo'),
+            onPressed: () async {
+              try {
+                var memoSummary = await _notepadClient.getMemoSummary();
+
+                var importedCount = 0;
+                do {
+                  Toast.loading(context,
+                      title:
+                          "设备总计${memoSummary.memoCount}个，准备导入第${importedCount + 1}个");
+                  await Future.delayed(Duration(milliseconds: 3000), () {});
+                  var memoData = await _notepadClient.importMemo((progress) =>
+                      Toast.loading(context,
+                          title: 'importMemo progress $progress'));
+                  Toast.success(
+                    context,
+                    title:
+                        'importMemo finish, 有效点共计${memoData.pointers.length}个点',
+                  );
+                  await _notepadClient.deleteMemo();
+                  importedCount += 1;
+                } while (importedCount < memoSummary.memoCount);
+              } catch (e) {
+                Toast.fail(context, title: e.toString());
+              }
             },
           ),
         ],
@@ -278,7 +350,8 @@ class _NotepadDetailPageState extends State<NotepadDetailPage> implements Notepa
           child: Text('upgrade'),
           onPressed: () async {
             var upgradeBlob = await _loadUpgradeFile(Version(1, 0, 0));
-            await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF), (progress) {
+            await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF),
+                (progress) {
               print('upgrade progress $progress');
             });
           },
@@ -301,6 +374,7 @@ Future<String> _getUserServiceUrl() async {
 
 Future<String> _getAppUrl(String userServiceUrl, Version version) async {
   var appVer = '${version.major}.${version.minor ?? 0}.${version.patch ?? 0}';
-  var response = await http.get('$userServiceUrl/config/nxpUpdate?appVer=$appVer');
+  var response =
+      await http.get('$userServiceUrl/config/nxpUpdate?appVer=$appVer');
   return json.decode(response.body)['data']['appUrl'];
 }
