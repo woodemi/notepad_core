@@ -120,7 +120,7 @@ class MemoSummary {
   double get usedCapacityInMegas => usedCapacity / 1024.0 / 1024.0;
 
   @override
-  String toString() => '$memoCount, $totalCapacity, $freeCapacity, $usedCapacity';
+  String toString() => 'memoCount = $memoCount, totalCapacity = $totalCapacity, freeCapacity = $freeCapacity, usedCapacity = $usedCapacity';
 }
 
 class MemoInfo {
@@ -140,7 +140,7 @@ class MemoInfo {
         this.restCount = map['restCount'];
 
   @override
-  String toString() => '$sizeInByte, $createdAt, $partIndex, $restCount';
+  String toString() => 'sizeInByte = $sizeInByte, createdAt = $createdAt, partIndex = $partIndex, restCount = $restCount';
 }
 
 class MemoData {
