@@ -28,11 +28,21 @@ class WoodemiClient extends NotepadClient {
 
   WoodemiClient._(this.woodemiType);
 
-  factory WoodemiClient.create(Uint8List data) {
+  static WoodemiClient create(Uint8List data) {
     assert(startWith(data, prefix));
     var type = data.sublist(3, 5);
-    var isCompact = listEquals(type, UGEE_CN) || listEquals(type, UGEE_GLOBAL);
-    return isCompact ? WoodemiClient._(WoodemiType.A1) : WoodemiClient._(WoodemiType.A1P);
+
+    if (listEquals(type, WoodemiType.UGEE_CN.type)) {
+      return WoodemiClient._(WoodemiType.UGEE_CN);
+    } else if (listEquals(type, WoodemiType.UGEE_GLOBAL.type)) {
+      return WoodemiClient._(WoodemiType.UGEE_GLOBAL);
+    } else if (listEquals(type, WoodemiType.EMRIGHT_CN.type)) {
+      return WoodemiClient._(WoodemiType.EMRIGHT_CN);
+    } else if (listEquals(type, WoodemiType.REALTAK_CN.type)) {
+      return WoodemiClient._(WoodemiType.REALTAK_CN);
+    } else {
+      return WoodemiClient._(WoodemiType.UGEE_CN);
+    }
   }
 
   @override
@@ -203,6 +213,9 @@ class WoodemiClient extends NotepadClient {
 
   @override
   Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
+
+  @override
+  String getDeviceType() => woodemiType.deviceType;
 
   @override
   Future<String> getDeviceName() async {

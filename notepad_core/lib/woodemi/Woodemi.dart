@@ -28,10 +28,6 @@ final defaultAuthToken = Uint8List.fromList([0x00, 0x00, 0x00, 0x01]);
 
 const MTU_WUART = 247;
 
-const UGEE_CN = [0x41, 0x35];
-const UGEE_GLOBAL = [0x41, 0x36];
-const EMRIGHT_CN = [0x41, 0x37];
-
 /**
  * +---A1P--+
  * |        |
@@ -43,18 +39,30 @@ const EMRIGHT_CN = [0x41, 0x37];
  * +--------+
  */
 class WoodemiType {
-  static const A1 = WoodemiType._(0, 0, 14800, 21000, 512);
-  static const A1P = WoodemiType._(-500, 0, 14800, 21000, 2048);
+  //  A1(国内版本)
+  static final UGEE_CN = WoodemiType._([0x41, 0x35], 'A1', 0, 0, 14800, 21000, 512);
 
+  //  A1(国际版本)
+  static final UGEE_GLOBAL = WoodemiType._([0x41, 0x369], 'A1', 0, 0, 14800, 21000, 512);
+
+  //  A1 Pro(国内版本)
+  static final EMRIGHT_CN = WoodemiType._([0x41, 0x37], 'A1 Pro', -500, 0, 14800, 21000, 2048);
+
+  //  A2（国内版本）
+  static final REALTAK_CN = WoodemiType._([0x41, 0x3], 'A2', 0, 0, 14800, 21000, 2048);
+
+  final List<int> type;
+  final String deviceType;
   final int originX;
   final int originY;
   final int width;
   final int height;
   final int pressure;
 
-  const WoodemiType._(this.originX, this.originY, this.width, this.height, this.pressure);
+  WoodemiType._(this.type, this.deviceType, this.originX, this.originY, this.width, this.height, this.pressure);
 
   double sizeScale() => 14800.0 / width;
+
   double pressureScale() => 512.0 / pressure;
 }
 
