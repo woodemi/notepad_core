@@ -28,11 +28,21 @@ class WoodemiClient extends NotepadClient {
 
   WoodemiClient._(this.woodemiType);
 
-  factory WoodemiClient.create(Uint8List data) {
+  static WoodemiClient create(Uint8List data) {
     assert(startWith(data, prefix));
     var type = data.sublist(3, 5);
-    var isCompact = listEquals(type, UGEE_CN) || listEquals(type, UGEE_GLOBAL);
-    return isCompact ? WoodemiClient._(WoodemiType.A1) : WoodemiClient._(WoodemiType.A1P);
+
+    if (listEquals(type, WoodemiType.UGEE_CN.type)) {
+      return WoodemiClient._(WoodemiType.UGEE_CN);
+    } else if (listEquals(type, WoodemiType.UGEE_GLOBAL.type)) {
+      return WoodemiClient._(WoodemiType.UGEE_GLOBAL);
+    } else if (listEquals(type, WoodemiType.EMRIGHT_CN.type)) {
+      return WoodemiClient._(WoodemiType.EMRIGHT_CN);
+    } else if (listEquals(type, WoodemiType.REALTAK_CN.type)) {
+      return WoodemiClient._(WoodemiType.REALTAK_CN);
+    } else {
+      return WoodemiClient._(WoodemiType.UGEE_CN);
+    }
   }
 
   @override
@@ -203,6 +213,9 @@ class WoodemiClient extends NotepadClient {
 
   @override
   Size getDeviceSize() => Size(width.toDouble(), height.toDouble());
+
+  @override
+  String getDeviceType() => woodemiType.deviceType;
 
   @override
   Future<String> getDeviceName() async {
@@ -489,12 +502,32 @@ class WoodemiClient extends NotepadClient {
     byteData.setUint16(position += 1, l2capChannelOrPsm, Endian.little);
     var request = Uint8List.fromList([0x04] + byteData.buffer.asUint8List());
 
-    var chunkCountCeil = (blockSize / maxChunkSize).ceil();
-    var indexedChunkStream = _receiveChunks(chunkCountCeil);
+    var indexedChunkStream = _receiveChunks(chunkCountCeil(blockSize, maxChunkSize, currentPos));
 
     notepadType.sendRequestAsync('FileInputControl', fileInputControlRequestCharacteristic, request);
 
     return indexedChunkStream;
+  }
+
+  /*
+   * 计算数量，
+   * 如果是A1，关系式为：blockSize = n*242
+   * 如果是A2，关系式为：blockSize = 64 + n*242 + 8
+   */
+  int chunkCountCeil(int blockSize, int maxChunkSize, int currentPos) {
+    var chunkCountCeil = (blockSize / maxChunkSize).ceil();
+    if (woodemiType == WoodemiType.REALTAK_CN) {
+      chunkCountCeil = 256;
+      if (currentPos == 0) {
+        var count = ((blockSize - 64 - 8) / maxChunkSize).ceil();
+        if (count <= 254) chunkCountCeil = count + 2;
+      } else {
+        var count = ((blockSize - 8) / maxChunkSize).ceil();
+        if (count <= 255) chunkCountCeil = count + 1;
+      }
+    }
+    print('chunkCountCeil = $chunkCountCeil');
+    return chunkCountCeil;
   }
 
   /// +-------------+--------------------------+
