@@ -502,12 +502,32 @@ class WoodemiClient extends NotepadClient {
     byteData.setUint16(position += 1, l2capChannelOrPsm, Endian.little);
     var request = Uint8List.fromList([0x04] + byteData.buffer.asUint8List());
 
-    var chunkCountCeil = (blockSize / maxChunkSize).ceil();
-    var indexedChunkStream = _receiveChunks(chunkCountCeil);
+    var indexedChunkStream = _receiveChunks(chunkCountCeil(blockSize, maxChunkSize, currentPos));
 
     notepadType.sendRequestAsync('FileInputControl', fileInputControlRequestCharacteristic, request);
 
     return indexedChunkStream;
+  }
+
+  /*
+   * 计算数量，
+   * 如果是A1，关系式为：blockSize = n*242
+   * 如果是A2，关系式为：blockSize = 64 + n*242 + 8
+   */
+  int chunkCountCeil(int blockSize, int maxChunkSize, int currentPos) {
+    var chunkCountCeil = (blockSize / maxChunkSize).ceil();
+    if (woodemiType == WoodemiType.REALTAK_CN) {
+      chunkCountCeil = 256;
+      if (currentPos == 0) {
+        var count = ((blockSize - 64 - 8) / maxChunkSize).ceil();
+        if (count <= 254) chunkCountCeil = count + 2;
+      } else {
+        var count = ((blockSize - 8) / maxChunkSize).ceil();
+        if (count <= 255) chunkCountCeil = count + 1;
+      }
+    }
+    print('chunkCountCeil = $chunkCountCeil');
+    return chunkCountCeil;
   }
 
   /// +-------------+--------------------------+
