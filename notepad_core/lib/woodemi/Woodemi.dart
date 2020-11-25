@@ -43,13 +43,13 @@ class WoodemiType {
   static final UGEE_CN = WoodemiType._([0x41, 0x35], 'A1', 0, 0, 14800, 21000, 512);
 
   //  A1(国际版本)
-  static final UGEE_GLOBAL = WoodemiType._([0x41, 0x369], 'A1', 0, 0, 14800, 21000, 512);
+  static final UGEE_GLOBAL = WoodemiType._([0x41, 0x36], 'A1', 0, 0, 14800, 21000, 512);
 
   //  A1 Pro(国内版本)
   static final EMRIGHT_CN = WoodemiType._([0x41, 0x37], 'A1 Pro', -500, 0, 14800, 21000, 2048);
 
   //  A2（国内版本）
-  static final REALTAK_CN = WoodemiType._([0x41, 0x3], 'A2', 0, 0, 14800, 21000, 2048);
+  static final REALTAK_CN = WoodemiType._([0x41, 0x39], 'A2', 0, 0, 14800, 21000, 2048);
 
   final List<int> type;
   final String deviceType;
