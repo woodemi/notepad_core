@@ -69,7 +69,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
-            Log.d(TAG, "bluetoothReceiver onReceive $state")
+//            Log.d(TAG, "bluetoothReceiver onReceive $state")
             when (state) {
                 BluetoothAdapter.STATE_OFF -> {
                     mainThreadHandler.post { connectorMessage.send(mapOf("BluetoothState" to "unavailable")) }
@@ -82,7 +82,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        Log.d(TAG, "$this onMethodCall " + call.method)
+//        Log.d(TAG, "$this onMethodCall " + call.method)
         when (call.method) {
             "isBluetoothAvailable" -> {
                 result.success(bluetoothManager.adapter.isEnabled)
@@ -161,11 +161,11 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanFailed(errorCode: Int) {
-            Log.v(TAG, "onScanFailed: $errorCode")
+//            Log.v(TAG, "onScanFailed: $errorCode")
         }
 
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            Log.v(TAG, "onScanResult: $callbackType + $result")
+//            Log.v(TAG, "onScanResult: $callbackType + $result")
             scanResultSink?.success(mapOf<String, Any>(
                     "name" to (result.device.name ?: ""),
                     "deviceId" to result.device.address,
@@ -175,7 +175,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
         }
 
         override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-            Log.v(TAG, "onBatchScanResults: $results")
+//            Log.v(TAG, "onBatchScanResults: $results")
         }
     }
 
@@ -209,7 +209,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onConnectionStateChange: status($status), newState($newState)")
+//            Log.v(TAG, "onConnectionStateChange: status($status), newState($newState)")
             if (newState == BluetoothGatt.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
                 mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "connected")) }
             } else {
@@ -224,14 +224,14 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onServicesDiscovered $status")
+//            Log.v(TAG, "onServicesDiscovered $status")
             if (status != BluetoothGatt.GATT_SUCCESS) return
             gatt?.services?.forEach { service ->
                 Log.v(TAG, "Service " + service.uuid)
                 service.characteristics.forEach { characteristic ->
-                    Log.v(TAG, "    Characteristic ${characteristic.uuid}")
+//                    Log.v(TAG, "    Characteristic ${characteristic.uuid}")
                     characteristic.descriptors.forEach {
-                        Log.v(TAG, "        Descriptor ${it.uuid}")
+//                        Log.v(TAG, "        Descriptor ${it.uuid}")
                     }
                 }
             }
@@ -249,7 +249,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onMtuChanged $mtu, $status")
+//            Log.v(TAG, "onMtuChanged $mtu, $status")
             if (status != BluetoothGatt.GATT_SUCCESS) return
             mainThreadHandler.post { clientMessage.send(mapOf("mtuConfig" to mtu)) }
         }
@@ -259,7 +259,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onDescriptorWrite ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
+//            Log.v(TAG, "onDescriptorWrite ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
             mainThreadHandler.post { clientMessage.send(mapOf("characteristicConfig" to descriptor.characteristic.uuid.toString())) }
         }
 
@@ -268,7 +268,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onCharacteristicRead ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
+//            Log.v(TAG, "onCharacteristicRead ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
             val characteristicValue = mapOf(
                     "characteristic" to characteristic.uuid.toString(),
                     "value" to characteristic.value
@@ -281,7 +281,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onCharacteristicWrite ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
+//            Log.v(TAG, "onCharacteristicWrite ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
@@ -289,7 +289,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 Log.e(TAG, "Probably MEMORY LEAK!")
                 return
             }
-            Log.v(TAG, "onCharacteristicChanged ${characteristic.uuid}, ${characteristic.value.contentToString()}")
+//            Log.v(TAG, "onCharacteristicChanged ${characteristic.uuid}, ${characteristic.value.contentToString()}")
             val characteristicValue = mapOf(
                     "characteristic" to characteristic.uuid.toString(),
                     "value" to characteristic.value

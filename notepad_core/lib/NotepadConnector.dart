@@ -69,7 +69,7 @@ class NotepadConnector {
   ConnectionChangeHandler connectionChangeHandler;
 
   Future<void> _handleMessage(NotepadCoreMessage message) async {
-    print('$_tag _handleMessage $message');
+//    print('$_tag _handleMessage $message');
     if (message is NotepadConnectionState) {
       await _handleConnectionState(message);
     } else if (message is BluetoothState) {

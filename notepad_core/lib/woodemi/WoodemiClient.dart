@@ -134,7 +134,7 @@ class WoodemiClient extends NotepadClient {
         .receiveValue(commandResponseCharacteristic)
         .where((value) => value.first == 0x06 || value.first == 0x0E)
         .map((value) {
-          print('onMessageInputReceive ${hex.encode(value)}');
+//          print('onMessageInputReceive ${hex.encode(value)}');
           return value;
         })
         .listen(_handleMessageInput);
@@ -146,7 +146,7 @@ class WoodemiClient extends NotepadClient {
   }
 
   void _handleMessageInput(Uint8List value) {
-    print('_handleMessageInput: ${hex.encode(value)}');
+//    print('_handleMessageInput: ${hex.encode(value)}');
     var tuple01 = value.sublist(0, 2);
     if (listEquals(tuple01, [0x06, 0x00])) {
       if (value[2] == 0x01)
@@ -469,7 +469,7 @@ class WoodemiClient extends NotepadClient {
       });
       var sortedKeys = blockChunkMap.keys.toList()..sort();
       var block = sortedKeys.map((k) => blockChunkMap[k]).reduce((acc, bytes) => Uint8List.fromList(acc + bytes));
-      print('receiveBlock size(${block.length})');
+//      print('receiveBlock size(${block.length})');
       data = Uint8List.fromList(data + block);
     }
     return ImageTransmission.forInput(data);
@@ -499,7 +499,7 @@ class WoodemiClient extends NotepadClient {
     var transferMethod = 0;
     var l2capChannelOrPsm = 0x0004;
 
-    print('requestForNextBlock currentPos $currentPos, totalSize $totalSize, blockSize, $blockSize, maxChunkSize $maxChunkSize');
+//    print('requestForNextBlock currentPos $currentPos, totalSize $totalSize, blockSize, $blockSize, maxChunkSize $maxChunkSize');
 
     var imageId = fileInfo.item1;
     var byteData = ByteData(imageId.length + 4 + 4 + 2 + 1 + 2);
@@ -537,7 +537,7 @@ class WoodemiClient extends NotepadClient {
         if (count <= 255) chunkCountCeil = count + 1;
       }
     }
-    print('chunkCountCeil = $chunkCountCeil');
+//    print('chunkCountCeil = $chunkCountCeil');
     return chunkCountCeil;
   }
 
@@ -602,9 +602,9 @@ class WoodemiClient extends NotepadClient {
         break;
       } else if (receivedRequest[0] == 0x07 && receivedRequest[1] == 0x05) {
         // [0x07, 0x05, 0x0b] Notepad error when parsing chunks
-        print('Error receivedRequest: ${hex.encode(receivedRequest)}');
+//        print('Error receivedRequest: ${hex.encode(receivedRequest)}');
       } else {
-        print('Unknown receivedRequest ${hex.encode(receivedRequest)}');
+//        print('Unknown receivedRequest ${hex.encode(receivedRequest)}');
       }
     }
   }
@@ -617,7 +617,7 @@ class WoodemiClient extends NotepadClient {
     final currentPos = byteData.getUint32(position, Endian.little);
     final blockSize = byteData.getUint32(position += 4, Endian.little);
     final maxChunkSize = byteData.getUint16(position += 4, Endian.little);
-    print('receivedRequest currentPos $currentPos, blockSize $blockSize, maxChunkSize $maxChunkSize');
+//    print('receivedRequest currentPos $currentPos, blockSize $blockSize, maxChunkSize $maxChunkSize');
 
     final chunkCount = (blockSize / maxChunkSize).ceil();
     for (var i = 0; i < chunkCount; i++) {
@@ -633,12 +633,12 @@ class WoodemiClient extends NotepadClient {
     var iterator = chunks.iterator..moveNext();
     while (true) {
       final c = iterator.current;
-      print('sendChunks ${c.index}, ${c.rangeStart}, ${c.rangeEnd}, ${c.bytes.length}');
+//      print('sendChunks ${c.index}, ${c.rangeStart}, ${c.rangeEnd}, ${c.bytes.length}');
       var chunkData = Uint8List.fromList([0x05, c.index] + c.bytes);
       try {
         await notepadType.sendRequestAsync('FileOutput', fileOutputCharacteristic, chunkData, BleOutputProperty.withoutResponse);
       } on Exception catch (e) {
-        print('sendRequestAsync error: $e');
+//        print('sendRequestAsync error: $e');
         return;
       }
       offSetListener(c.rangeEnd);

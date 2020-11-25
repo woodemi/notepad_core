@@ -48,10 +48,21 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
     }
   }
 
+  var nums = 0;
+  var sums = 0;
+  var lastDate = 0;
   @override
   void handlePointer(List<NotePenPointer> list) {
     for (var p in list) {
-      print('handlePointer ${p.x}, ${p.y}, ${p.p}');
+//      print('handlePointer ${p.x}, ${p.y}, ${p.p}');
+      nums = nums + 1;
+      var date = DateTime.now().millisecondsSinceEpoch;
+      var interval = date - lastDate;
+      if (interval >= 1000) {
+        print('---------------- lastDate = $lastDate  date = $date  interval = $interval nums = $nums');
+        lastDate = date;
+        nums = 0;
+      }
     }
   }
 

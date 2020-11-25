@@ -15,11 +15,11 @@ class NotepadType {
 
   Future<void> configCharacteristics() async {
     for (var serviceCharacteristic in _notepadClient.inputIndicationCharacteristics) {
-      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), indication');
+//      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), indication');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.indication);
     }
     for (var serviceCharacteristic in _notepadClient.inputNotificationCharacteristics) {
-      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), notification');
+//      print('configInputCharacteristic (${serviceCharacteristic.item1}, ${serviceCharacteristic.item2}), notification');
       await NotepadCorePlatform.instance.setNotifiable(serviceCharacteristic, BleInputProperty.notification);
     }
   }
@@ -51,7 +51,7 @@ class NotepadType {
 
   Future<Uint8List> receiveResponseAsync(String messageHead, Tuple2<String, String> serviceCharacteristic, Predicate intercept) async {
     var response = await receiveValue(serviceCharacteristic).firstWhere(intercept);
-    print('on${messageHead}Receive: ${hex.encode(response)}');
+//    print('receiveResponseAsync on${messageHead}Receive: ${hex.encode(response)}');
     return response;
   }
 
@@ -68,7 +68,8 @@ class NotepadType {
   }
 
   Stream<Uint8List> receiveSyncInput() => receiveValue(_notepadClient.syncInputCharacteristic).map((value) {
-    print('onSyncInputReceive ${hex.encode(value)}');
+//    print('onSyncInputReceive ${value}');
+//    print('onSyncInputReceive ${hex.encode(value)}');
     return value;
   });
 
@@ -79,7 +80,7 @@ class NotepadType {
   }
 
   Stream<Uint8List> receiveFileInput() => receiveValue(_notepadClient.fileInputCharacteristic).map((value) {
-    print('onFileInputReceive: ${hex.encode(value)}');
+//    print('onFileInputReceive: ${hex.encode(value)}');
     return value;
   });
 }
