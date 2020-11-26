@@ -323,17 +323,6 @@ class WoodemiClient extends NotepadClient {
     );
   }
 
-  @override
-  List<NotePenPointer> parseSyncData(Uint8List value) {
-    return parseSyncPointer(value).map((pointer) {
-      var originX = ((woodemiType.originX + pointer.x) * woodemiType.sizeScale()).toInt();
-      var originY = ((woodemiType.originY + pointer.y) * woodemiType.sizeScale()).toInt();
-      var originP = (pointer.p * woodemiType.pressureScale()).toInt();
-      return new NotePenPointer(originX, originY, pointer.t, originP);
-    }).toList();
-  }
-  //#endregion
-
   //#region ImportMemo
   @override
   Future<MemoSummary> getMemoSummary() {
@@ -401,7 +390,7 @@ class WoodemiClient extends NotepadClient {
   @override
   Future<MemoData> importMemo(void progress(int)) async {
     Tuple2<MemoInfo, Uint8List> tuple = await importImageData(progress);
-    return MemoData(tuple.item1, parseMemo(tuple.item2, tuple.item1.createdAt).toList());
+    return MemoData(tuple.item1, parseMemo(tuple.item2, tuple.item1.createdAt));
   }
 
   /// Memo is kind of LargeData, transferred in data structure [ImageTransmission]
@@ -420,24 +409,46 @@ class WoodemiClient extends NotepadClient {
     return Tuple2(info, imageTransmission.imageData);
   }
 
+  @override
+  List<NotePenPointer> parseSyncData(Uint8List value) {
+    return adjustPointer(parseSyncPointer(value));
+  }
+
   @visibleForTesting
-  Iterable<NotePenPointer> parseMemo(Uint8List bytes, int createdAt) sync* {
+  List<NotePenPointer> parseMemo(Uint8List bytes, int createdAt) {
+    return adjustPointer(parseMemoPointers(bytes, createdAt));
+  }
+
+  List<NotePenPointer> parseMemoPointers(Uint8List bytes, int createdAt) {
     var byteParts = partition(bytes, 6);
     var start = createdAt;
-    for (var byteList in byteParts) {
+    return byteParts.map((byteList) {
       var byteData = Uint8List.fromList(byteList).buffer.asByteData();
       if (byteList[4] == 0xFF && byteList[5] == 0xFF) {
         start = byteData.getUint32(0, Endian.little);
+        return NotePenPointer(65535, 65535, 0, 0);  // adjust中会过滤掉的
       } else {
         var x = byteData.getUint16(0, Endian.little);
         var y = byteData.getUint16(2, Endian.little);
         var p = byteData.getUint16(4, Endian.little);
-        var originX = ((woodemiType.originX + x) * woodemiType.sizeScale()).toInt();
-        var originY = ((woodemiType.originY + y) * woodemiType.sizeScale()).toInt();
-        var originP = (p * woodemiType.sizeScale()).toInt();
-        yield NotePenPointer(originX, originY, start += SAMPLE_INTERVAL_MS, originP);
+        return NotePenPointer(x, y, start += SAMPLE_INTERVAL_MS, p);
       }
-    }
+    }).toList();
+  }
+
+  List<NotePenPointer> adjustPointer(List<NotePenPointer> pointers) {
+    pointers.removeWhere((element) =>
+    element.x < woodemiType.originX || element.x > woodemiType.width ||
+        element.y < woodemiType.originY || element.y > woodemiType.height);
+
+    return pointers.map((pointer) {
+      var originX = ((woodemiType.originX + pointer.x) *
+          woodemiType.sizeScale()).toInt();
+      var originY = ((woodemiType.originY + pointer.y) *
+          woodemiType.sizeScale()).toInt();
+      var originP = (pointer.p * woodemiType.pressureScale()).toInt();
+      return NotePenPointer(originX, originY, pointer.t, originP);
+    }).toList();
   }
 
   /// +---------------------------------+
