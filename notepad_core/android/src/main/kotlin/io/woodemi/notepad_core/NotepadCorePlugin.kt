@@ -3,11 +3,9 @@ package io.woodemi.notepad_core
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
@@ -21,7 +19,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 
-private const val TAG = "NotepadCorePlugin"
+const val TAG = "NotepadCorePlugin"
 
 /** NotepadCorePlugin */
 class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, Closeable {
@@ -49,10 +47,11 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
         close()
     }
 
-    private lateinit var context: Context
+    lateinit var context: Context
 
     private fun init(context: Context, messenger: BinaryMessenger) {
         this.context = context
+        //  woodemi
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         context.registerReceiver(bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
@@ -84,6 +83,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         Log.d(TAG, "$this onMethodCall " + call.method)
         when (call.method) {
+            //  公共部分：Woodemi
             "isBluetoothAvailable" -> {
                 result.success(bluetoothManager.adapter.isEnabled)
             }
@@ -108,6 +108,8 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 result.success(null)
                 connectorMessage.send(mapOf("ConnectionState" to "disconnected"))
             }
+
+            //  以下为Woodemi专有
             "discoverServices" -> {
                 connectGatt?.discoverServices()
                 result.success(null)
@@ -157,29 +159,7 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
         }
     }
 
-    private lateinit var bluetoothManager: BluetoothManager
-
-    private val scanCallback = object : ScanCallback() {
-        override fun onScanFailed(errorCode: Int) {
-            Log.v(TAG, "onScanFailed: $errorCode")
-        }
-
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            Log.v(TAG, "onScanResult: $callbackType + $result")
-            scanResultSink?.success(mapOf<String, Any>(
-                    "name" to (result.device.name ?: ""),
-                    "deviceId" to result.device.address,
-                    "manufacturerData" to (result.manufacturerData ?: byteArrayOf()),
-                    "rssi" to result.rssi
-            ))
-        }
-
-        override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-            Log.v(TAG, "onBatchScanResults: $results")
-        }
-    }
-
-    private var scanResultSink: EventChannel.EventSink? = null
+    var scanResultSink: EventChannel.EventSink? = null
 
     override fun onListen(args: Any?, eventSink: EventChannel.EventSink?) {
         val map = args as? Map<String, Any> ?: return
@@ -195,133 +175,11 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
         }
     }
 
-    private var connectGatt: BluetoothGatt? = null
+    var connectGatt: BluetoothGatt? = null
 
-    private val mainThreadHandler = Handler(Looper.getMainLooper())
+    val mainThreadHandler = Handler(Looper.getMainLooper())
 
-    private lateinit var connectorMessage: BasicMessageChannel<Any>
+    lateinit var connectorMessage: BasicMessageChannel<Any>
 
-    private lateinit var clientMessage: BasicMessageChannel<Any>
-
-    private val gattCallback = object : BluetoothGattCallback() {
-        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onConnectionStateChange: status($status), newState($newState)")
-            if (newState == BluetoothGatt.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
-                mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "connected")) }
-            } else {
-                connectGatt?.close()
-                connectGatt = null
-                mainThreadHandler.post { connectorMessage.send(mapOf("ConnectionState" to "disconnected")) }
-            }
-        }
-
-        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onServicesDiscovered $status")
-            if (status != BluetoothGatt.GATT_SUCCESS) return
-            gatt?.services?.forEach { service ->
-                Log.v(TAG, "Service " + service.uuid)
-                service.characteristics.forEach { characteristic ->
-                    Log.v(TAG, "    Characteristic ${characteristic.uuid}")
-                    characteristic.descriptors.forEach {
-                        Log.v(TAG, "        Descriptor ${it.uuid}")
-                    }
-                }
-            }
-
-            mainThreadHandler.post {
-                connectorMessage.send(mapOf(
-                        "ServiceState" to "discovered",
-                        "services" to gatt!!.services.map { it.uuid.toString() }
-                ))
-            }
-        }
-
-        override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onMtuChanged $mtu, $status")
-            if (status != BluetoothGatt.GATT_SUCCESS) return
-            mainThreadHandler.post { clientMessage.send(mapOf("mtuConfig" to mtu)) }
-        }
-
-        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onDescriptorWrite ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
-            mainThreadHandler.post { clientMessage.send(mapOf("characteristicConfig" to descriptor.characteristic.uuid.toString())) }
-        }
-
-        override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onCharacteristicRead ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
-            val characteristicValue = mapOf(
-                    "characteristic" to characteristic.uuid.toString(),
-                    "value" to characteristic.value
-            )
-            mainThreadHandler.post { clientMessage.send(mapOf("characteristicValue" to characteristicValue)) }
-        }
-
-        override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onCharacteristicWrite ${characteristic.uuid}, ${characteristic.value.contentToString()} $status")
-        }
-
-        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic) {
-            if (gatt != connectGatt) {
-                Log.e(TAG, "Probably MEMORY LEAK!")
-                return
-            }
-            Log.v(TAG, "onCharacteristicChanged ${characteristic.uuid}, ${characteristic.value.contentToString()}")
-            val characteristicValue = mapOf(
-                    "characteristic" to characteristic.uuid.toString(),
-                    "value" to characteristic.value
-            )
-            mainThreadHandler.post { clientMessage.send(mapOf("characteristicValue" to characteristicValue)) }
-        }
-    }
-}
-
-val ScanResult.manufacturerData: ByteArray?
-    get() {
-        val sparseArray = scanRecord?.manufacturerSpecificData ?: return null
-        if (sparseArray.size() == 0) return null
-
-        return sparseArray.keyAt(0).toShort().toByteArray() + sparseArray.valueAt(0)
-    }
-
-fun Short.toByteArray(byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN): ByteArray =
-        ByteBuffer.allocate(2 /*Short.SIZE_BYTES*/).order(byteOrder).putShort(this).array()
-
-fun BluetoothGatt.getCharacteristic(serviceCharacteristic: Pair<String, String>) =
-        getService(UUID.fromString(serviceCharacteristic.first)).getCharacteristic(UUID.fromString(serviceCharacteristic.second))
-
-private val DESC__CLIENT_CHAR_CONFIGURATION = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-
-fun BluetoothGatt.setNotifiable(serviceCharacteristic: Pair<String, String>, bleInputProperty: String) {
-    val descriptor = getCharacteristic(serviceCharacteristic).getDescriptor(DESC__CLIENT_CHAR_CONFIGURATION)
-    val (value, enable) = when (bleInputProperty) {
-        "notification" -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE to true
-        "indication" -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE to true
-        else -> BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE to false
-    }
-    descriptor.value = value
-    setCharacteristicNotification(descriptor.characteristic, enable) && writeDescriptor(descriptor)
+    lateinit var clientMessage: BasicMessageChannel<Any>
 }
