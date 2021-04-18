@@ -196,14 +196,15 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
             child: Text('getDeviceDate'),
             onPressed: () async {
               var date = await _notepadClient.getDeviceDate();
-              _toast('date = ${date}');
+              _toast('date = ${date} 即北京时间：${DateTime.fromMillisecondsSinceEpoch(date.toInt() * 1000)}');
             },
           ),
           RaisedButton(
             child: Text('setDeviceDate'),
-            onPressed: () async => {
-              await _notepadClient.setDeviceDate(0), // second
-              _toast('new DeivceDate = 0，即北京时间：1970-01-01 08:00:00}'),
+            onPressed: () async {
+              var newDate = DateTime.now().millisecondsSinceEpoch / 1000;
+              await _notepadClient.setDeviceDate(newDate.toInt()); // second
+              _toast('newDate = $newDate，即北京时间：${DateTime.fromMillisecondsSinceEpoch(newDate.toInt() * 1000)}');
             },
           ),
         ],
