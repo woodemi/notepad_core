@@ -1,18 +1,21 @@
 import 'dart:typed_data';
 
 class NotepadScanResult {
+  String type;
   String name;
   String deviceId;
   Uint8List manufacturerData;
   int rssi;
 
   NotepadScanResult.fromMap(map)
-      : name = map['name'],
+      : type = map['type'] ?? '',
+        name = map['name'],
         deviceId = map['deviceId'],
         manufacturerData = map['manufacturerData'],
         rssi = map['rssi'];
 
   Map toMap() => {
+        'type': type,
         'name': name,
         'deviceId': deviceId,
         'manufacturerData': manufacturerData,
