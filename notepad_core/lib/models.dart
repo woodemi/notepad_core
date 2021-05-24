@@ -152,6 +152,11 @@ class MemoData {
 
   MemoData(this.memoInfo, this.pointers);
 
+  MemoData.from(MemoInfo memoInfo, List<NotePenPointer> pointers) {
+    this.memoInfo = memoInfo;
+    this.pointers = pointers;
+  }
+
   MemoData.fromMap(map) {
     this.memoInfo = MemoInfo.fromMap(map['memoInfo']);
     var pointers = List<NotePenPointer>();
