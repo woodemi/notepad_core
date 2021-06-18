@@ -6,13 +6,15 @@ class NotepadScanResult {
   String deviceId;
   Uint8List manufacturerData;
   int rssi;
+  String showId;
 
   NotepadScanResult.fromMap(map)
       : type = map['type'] ?? '',
         name = map['name'],
         deviceId = map['deviceId'],
         manufacturerData = map['manufacturerData'],
-        rssi = map['rssi'];
+        rssi = map['rssi'],
+        showId = '${map['deviceId']}'.toUpperCase().replaceAll(':', '');
 
   Map toMap() => {
         'type': type,
@@ -20,6 +22,7 @@ class NotepadScanResult {
         'deviceId': deviceId,
         'manufacturerData': manufacturerData,
         'rssi': rssi,
+        'showId': showId,
       };
 }
 
