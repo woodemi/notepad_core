@@ -9,4 +9,27 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
+
+    <application>
+        <service
+            android:name="com.realsil.sdk.dfu.DfuService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name="com.realsil.ota.RtkUpdateService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <receiver android:name="com.realsil.ota.RtkOtaReceiver">
+            <intent-filter>
+                <action
+                    android:name="rtk_ACTION_START_OTA"/>
+                <category
+                    android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>
