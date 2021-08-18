@@ -21,6 +21,9 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   Future<bool> isBluetoothAvailable() => _method.invokeMethod('isBluetoothAvailable');
 
   @override
+  MethodChannel methodChannel() => _method;
+
+  @override
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   }) {
@@ -153,6 +156,11 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
   @override
   Stream<Tuple2<String, Uint8List>> get inputValueStream => _characteristicValueController.stream;
 
+  final _otherMessageStreamController = StreamController<dynamic>.broadcast();
+
+  @override
+  Stream get otherMessageStream  => _otherMessageStreamController.stream;
+
   Future<dynamic> _handleClientMessage(dynamic message) {
     print('_handleClientMessage $message');
     if (message['characteristicConfig'] != null) {
@@ -163,6 +171,8 @@ class MethodChannelNotepadCore extends NotepadCorePlatform {
       _characteristicValueController.add(Tuple2(characteristicValue['characteristic'], value));
     } else if (message['mtuConfig'] != null) {
       _mtuConfigController.add(message['mtuConfig']);
+    } else {
+      _otherMessageStreamController.add(message);
     }
   }
 }

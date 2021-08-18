@@ -18,8 +18,14 @@ import java.io.Closeable
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
+import com.realsil.ota.RTKOTA
+import com.realsil.ota.RTK_OTA_Method_Name
 
 const val TAG = "NotepadCorePlugin"
+
+val mainThreadHandler = Handler(Looper.getMainLooper())
+
+lateinit var clientMessage: BasicMessageChannel<Any>
 
 /** NotepadCorePlugin */
 class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, Closeable {
@@ -155,6 +161,17 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
                 else
                     result.error("Characteristic unavailable", null, null)
             }
+            // 以下为woodemi-A2的OTA
+            RTK_OTA_Method_Name.startUpgradeA2.name -> {
+                Log.i("woodemi-A2 arguments", call.arguments.toString())
+                Log.d("woodemi-A2 context", context.toString())
+                val args = call.arguments as Map<String, String>
+                val rtkOTA = RTKOTA()
+                rtkOTA.init(context)
+                mainThreadHandler.post {
+                    rtkOTA.startOtaProcess(args["filePath"]!!, args["deviceAddress"]!!)
+                }
+            }
             else -> result.notImplemented()
         }
     }
@@ -199,9 +216,5 @@ class NotepadCorePlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamH
 
     var connectGatt: BluetoothGatt? = null
 
-    val mainThreadHandler = Handler(Looper.getMainLooper())
-
     lateinit var connectorMessage: BasicMessageChannel<Any>
-
-    lateinit var clientMessage: BasicMessageChannel<Any>
 }

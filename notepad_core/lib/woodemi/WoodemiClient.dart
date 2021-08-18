@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -7,6 +8,7 @@ import 'dart:ui';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:quiver/iterables.dart' show partition;
 
 import '../Notepad.dart';
@@ -16,6 +18,8 @@ import '../utils.dart';
 import 'FileRecord.dart';
 import 'ImageTransmission.dart';
 import 'Woodemi.dart';
+
+typedef _IntCallback = void Function(int);
 
 class WoodemiClient extends NotepadClient {
   static Uint8List get prefix => Uint8List.fromList([0x57, 0x44, 0x4d]); // 'WDM'
@@ -112,6 +116,7 @@ class WoodemiClient extends NotepadClient {
   }
 
   StreamSubscription<Uint8List> _receiveSyncInputSubscription = null;
+  StreamSubscription<dynamic> _receiveOtherMessageSubscription = null;
 
   void _configSyncInput() {
     _clearSyncInput();
@@ -138,11 +143,39 @@ class WoodemiClient extends NotepadClient {
           return value;
         })
         .listen(_handleMessageInput);
+
+
+    _receiveOtherMessageSubscription =
+        NotepadCorePlatform.instance.otherMessageStream.listen((map) async {
+          switch (map["method"]) {
+            case "stateChangeA2":
+/*
+  state=513 message=初始化 …
+  state=514 message=启动中 …
+  state=516 message=连接设备…
+  state=517 message=准备升级环境 …
+  state=521 message=正在升级…
+  state=524 message=固件激活中
+  state=258 message=固件激活成功
+ */
+              break;
+            case "upgradeFailA2":
+              upgradeProgress(-1);
+              break;
+            case "upgradeProgressA2":
+              print('upgrading progress = ${map["value"]}');
+              upgradeProgress(int.parse(map["value"]));
+              break;
+          }
+        });
   }
 
   void _clearMessageIput() {
     _receiveMessageInputSubscription?.cancel();
     _receiveMessageInputSubscription = null;
+
+    _receiveOtherMessageSubscription?.cancel();
+    _receiveOtherMessageSubscription = null;
   }
 
   void _handleMessageInput(Uint8List value) {
@@ -602,8 +635,28 @@ class WoodemiClient extends NotepadClient {
     return await notepadType.executeCommand(command);
   }
 
+  _IntCallback upgradeProgress;
+
   @override
   Future<void> upgrade(Uint8List upgradeBlob, Version version, void progress(int)) async {
+    if (getDeviceType() == 'A2') {
+      if (Platform.isAndroid) {
+        upgradeProgress = progress;
+
+        var documentsDir = await getApplicationDocumentsDirectory();
+        var file = File('${documentsDir.path}/${version.description}.bin');
+        await file.writeAsBytes(upgradeBlob);
+        print('====================   大小：${upgradeBlob.length}');
+        print('====================   路径：${file.path}');
+        print('====================   设备：${scanResult.deviceId}');
+        await NotepadCorePlatform.instance.methodChannel().invokeMethod('startUpgradeA2', {
+          'deviceAddress': scanResult.deviceId,
+          'filePath': file.path,
+        });
+      }
+      return;
+    }
+
     final fileData = await parseUpgradeBlob(upgradeBlob);
     final imageId = hex.decode('0100');
     final imageVersion = Uint8List.fromList(version.bytes.reversed.toList() + hex.decode('4111111101'));

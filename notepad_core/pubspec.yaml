@@ -10,11 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  notepad_core_platform_interface: ^1.4.2
-  notepad_core_web: ^1.4.2
-  notepad_core_macos: ^1.4.2
-  convert: ^2.1.1
+#  notepad_core_platform_interface: ^1.4.2
+#  notepad_core_web: ^1.4.2
+#  notepad_core_macos: ^1.4.2
   quiver: ^2.0.5
+  notepad_core_platform_interface:
+    path: ../notepad_core_platform_interface
+  path_provider: ^1.5.1
 
 dev_dependencies:
   flutter_test:

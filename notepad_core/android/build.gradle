@@ -6,6 +6,9 @@ buildscript {
     repositories {
         google()
         jcenter()
+        flatDir {
+            dirs "libs"
+        }
     }
 
     dependencies {
@@ -45,16 +48,5 @@ dependencies {
     implementation "androidx.core:core-ktx:1.2.0"
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-//    implementation 'com.android.support:support-compat:28.0.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    compileOnly files('libs/rtk-dfu-3.2.20.jar')
-    compileOnly files('libs/rtk-dfu-support-1.1.7-83.aar')
-}
-
-repositories {
-    maven { url 'https://jitpack.io' }
-    flatDir {
-        dirs 'libs'
-    }
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 }

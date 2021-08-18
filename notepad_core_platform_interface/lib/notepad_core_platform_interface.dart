@@ -3,6 +3,7 @@ library notepad_core_platform_interface;
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart' as services;
 import 'package:notepad_core_platform_interface/notepad_core_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -39,6 +40,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
 
   Future<bool> isBluetoothAvailable();
 
+  services.MethodChannel methodChannel();
+
   Future<dynamic> requestDevice({
     List<String> optionalServices,
   });
@@ -66,6 +69,8 @@ abstract class NotepadCorePlatform extends PlatformInterface {
   Future<void> writeValue(Tuple2<String, String> serviceCharacteristic, Uint8List value, BleOutputProperty bleOutputProperty);
 
   Stream<Tuple2<String, Uint8List>> get inputValueStream;
+
+  Stream<dynamic> get otherMessageStream;
 }
 
 class BleInputProperty {

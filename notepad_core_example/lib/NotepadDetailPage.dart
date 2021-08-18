@@ -411,8 +411,17 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
         RaisedButton(
           child: Text('upgrade'),
           onPressed: () async {
-            var upgradeBlob = await _loadUpgradeFile(Version(1, 0, 0));
-            await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF),
+            // var upgradeBlob = await _loadUpgradeFile(Version(1, 0, 0));
+            // await _notepadClient.upgrade(upgradeBlob, Version(0xFF, 0xFF, 0xFF),
+            //     (progress) {
+            // var versionInfo = await _notepadClient.getVersionInfo();
+            // var version = versionInfo.hardware;
+            var version = Version(1, 0, 0);
+
+            var deviceType = _notepadClient.getDeviceType();
+            var otaModel = await _loadUpgradeFile(deviceType, version);
+            var otaFile = (await http.get(otaModel.appUrl)).bodyBytes;
+            await _notepadClient.upgrade(otaFile, otaModel.getVersion(),
                 (progress) {
               print('upgrade progress $progress');
             });
@@ -437,10 +446,33 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
   }
 }
 
-Future<Uint8List> _loadUpgradeFile(Version version) async {
+class OTAModel {
+  bool hasNewVersion;
+  String version;
+  String appUrl;
+  String description;
+  int releaseTime;
+  int level;
+
+  OTAModel.fromMap(Map json) {
+    hasNewVersion = json['hasNewVersion'] ?? false;
+    version = json['version'] ?? '';
+    appUrl = json['appUrl'] ?? '';
+    description = json['description'] ?? '';
+    releaseTime = json['releaseTime'] ?? 0;
+    level = json['level'] ?? 0;
+  }
+
+  Version getVersion() {
+    var list = version.split('.');
+    if (list.length != 3) return Version(0, 0, 0);
+    return Version(int.parse(list[0]), int.parse(list[1]), int.parse(list[2]));
+  }
+}
+
+Future<OTAModel> _loadUpgradeFile(String deviceType, Version version) async {
   var userServiceUrl = await _getUserServiceUrl();
-  var appUrl = await _getAppUrl(userServiceUrl, version);
-  return (await http.get(appUrl)).bodyBytes;
+  return await _getAppUrl(userServiceUrl, deviceType, version);
 }
 
 Future<String> _getUserServiceUrl() async {
@@ -448,9 +480,14 @@ Future<String> _getUserServiceUrl() async {
   return json.decode(response.body)['data']['entities'][0]['userServiceUrl'];
 }
 
-Future<String> _getAppUrl(String userServiceUrl, Version version) async {
+Future<OTAModel> _getAppUrl(
+  String userServiceUrl,
+  String deviceType,
+  Version version,
+) async {
   var appVer = '${version.major}.${version.minor ?? 0}.${version.patch ?? 0}';
-  var response =
-      await http.get('$userServiceUrl/config/nxpUpdate?appVer=$appVer');
-  return json.decode(response.body)['data']['appUrl'];
+  appVer = '0.0.1';
+  var url = '$userServiceUrl/config/nxpUpdate?appVer=$appVer&deviceType=$deviceType';
+  var response = await http.get(url);
+  return OTAModel.fromMap(json.decode(response.body)['data']);
 }

@@ -25,6 +25,15 @@ import com.realsil.sdk.dfu.support.DfuHelperImpl
 import com.realsil.sdk.dfu.support.settings.SettingsHelper
 import com.realsil.sdk.dfu.utils.DfuUtils
 
+import io.woodemi.notepad_core.clientMessage
+import io.woodemi.notepad_core.mainThreadHandler
+
+enum class RTK_OTA_Method_Name {
+    startUpgradeA2,
+    stateChangeA2,
+    upgradeFailA2,
+    upgradeProgressA2
+}
 /**
  * @author bingshanguxue
  */
@@ -131,9 +140,14 @@ class RTKOTA {
 //                state=524 message=固件激活中
 //                state=258 message=固件激活成功
 //                Log.d(TAG, String.format("0x%04X - %s", state, message))
-//                mainThreadHandler.post {
-//                    msgChannel.invokeMethod(RTCMethodName.stateChangeA2.name, state.toString());
-//                }
+                mainThreadHandler.post {
+                    clientMessage.send(
+                        mapOf(
+                            "method" to RTK_OTA_Method_Name.stateChangeA2.name,
+                            "value" to state.toString()
+                        )
+                    )
+                }
             } else if (ACTION_BACKGROUND_OTA_ERROR == action) {
                 val type = intent.getIntExtra(EXTRA_ERROR_TYPE, DfuException.Type.CONNECTION)
                 val code = intent.getIntExtra(EXTRA_ERROR_CODE, DfuException.ERROR_NA)
@@ -143,22 +157,36 @@ class RTKOTA {
                 } else {
                     message = String.format("升级失败", DfuHelperImpl.parseConnectionErrorCode(context, code))
                 }
-//                Log.d(TAG, "升级失败：code = " + code + " message = " + message)
-//                mainThreadHandler.post {
-//                    msgChannel.invokeMethod(RTCMethodName.upgradeFailA2.name, message);
-//                }
+                mainThreadHandler.post {
+                    clientMessage.send(
+                        mapOf(
+                            "method" to RTK_OTA_Method_Name.upgradeFailA2.name,
+                            "value" to message
+                        )
+                    )
+                }
             } else if (ACTION_BACKGROUND_OTA_PROGRESS_CHANGED == action) {
                 val dfuProgressInfo = intent.getParcelableExtra<DfuProgressInfo>(EXTRA_PROGRESS)
                 if (dfuProgressInfo != null) {
                     Log.d(TAG, "升级中：" + dfuProgressInfo.getProgress())
-//                    mainThreadHandler.post {
-//                        msgChannel.invokeMethod(RTCMethodName.upgradeProgressA2.name, dfuProgressInfo.getProgress().toString());
-//                    }
+                    mainThreadHandler.post {
+                        clientMessage.send(
+                            mapOf(
+                                "method" to RTK_OTA_Method_Name.upgradeProgressA2.name,
+                                "value" to dfuProgressInfo.getProgress().toString()
+                            )
+                        )
+                    }
                 } else {
-//                    Log.d(TAG, "升级中 dfuProgressInfo = null")
-//                    mainThreadHandler.post {
-//                        msgChannel.invokeMethod(RTCMethodName.upgradeFailA2.name, "升级中 dfuProgressInfo = null");
-//                    }
+                    Log.d(TAG, "升级中 dfuProgressInfo = null")
+                    mainThreadHandler.post {
+                        clientMessage.send(
+                            mapOf(
+                                "method" to RTK_OTA_Method_Name.upgradeFailA2.name,
+                                "value" to "升级中 dfuProgressInfo = null"
+                            )
+                        )
+                    }
                 }
             }
         }
