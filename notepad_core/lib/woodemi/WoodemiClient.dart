@@ -451,6 +451,30 @@ class WoodemiClient extends NotepadClient {
     }).toList();
   }
 
+  @override
+  Future<void> setPingInterval(int millis) async {
+    var enable = millis > 0 ? 0x01 : 0x00;
+    var byteData = ByteData(5)
+      ..setUint8(0, 0x11)
+      ..setUint8(1, 0x04)
+      ..setUint8(2, enable)
+      ..setUint16(3, millis, Endian.little);
+    await notepadType
+        .executeCommand(WoodemiCommand(request: byteData.buffer.asUint8List()));
+  }
+
+  @override
+  Future<void> setSyncfrequencyInterval(int count) async {
+    var byteData = ByteData(5)
+      ..setUint8(0, 0x11)
+      ..setUint8(1, 0x03)
+      ..setUint8(2, count)
+      ..setUint8(3, 0x10)
+      ..setUint8(4, 0x02);
+    await notepadType
+        .executeCommand(WoodemiCommand(request: byteData.buffer.asUint8List()));
+  }
+
   /// +---------------------------------+
   /// |       [ImageTransmission]       |
   /// +----------+-----------+----------+

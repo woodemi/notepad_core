@@ -105,10 +105,14 @@ abstract class NotepadClient {
   Future<void> setAutoLockTime(int time); // minute
   //#endregion
 
+  Future<void> setPingInterval(int millis);
+
   //#region SyncInput
   Future<void> setMode(NotepadMode notepadMode);
 
   List<NotePenPointer> parseSyncData(Uint8List value);
+
+  Future<void> setSyncfrequencyInterval(int count);
   //#endregion
 
   //#region ImportMemo

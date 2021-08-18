@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:notepad_core/notepad_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:notepad_core_example/WDMAlertDialog.dart';
 import 'package:tf_toast/Toast.dart';
 
 class NotepadDetailPage extends StatefulWidget {
@@ -22,6 +23,8 @@ _toast(String msg) => _scaffoldKey.currentState
 
 class _NotepadDetailPageState extends State<NotepadDetailPage>
     implements NotepadClientCallback {
+  var _textEditingController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -48,8 +51,25 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
     }
   }
 
+  int startDate = 0;
+  int totalPointers = 0;
+  var averageCount = '';
+
   @override
   void handlePointer(List<NotePenPointer> list) {
+    var nowDate = DateTime.now().millisecondsSinceEpoch;
+
+    //  累加点数
+    totalPointers += list.length;
+
+    //  每s计算一次
+    if (nowDate > startDate + 1000) {
+      print('总数：$totalPointers，平均速度：${totalPointers}');
+      setState(() => averageCount = '$totalPointers个/s');
+      startDate = nowDate;
+      totalPointers = 0;
+    }
+
     for (var p in list) {
       print('handlePointer ${p.x}, ${p.y}, ${p.p}');
     }
@@ -67,6 +87,14 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('NotepadDetailPage'),
+        actions: [
+          Container(
+            width: 50,
+            height: 50,
+            alignment: Alignment.center,
+            child: Text(averageCount),
+          ),
+        ],
       ),
       body: Column(
         children: <Widget>[
@@ -150,6 +178,25 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           RaisedButton(
+            child: Text('setSyncfrequencyInterval'),
+            onPressed: () async {
+              setInputText('请输入每s上报点数(数字)', (value) {
+                int count = int.parse(value);
+                if (count == null) {
+                  _toast('请输入有效数字');
+                  return;
+                }
+                _notepadClient.setSyncfrequencyInterval(count);
+                _toast('setSyncfrequencyInterval count = $count');
+              });
+            },
+          ),
+        ],
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          RaisedButton(
             child: Text('getDeviceSize'),
             onPressed: () async {
               var size = _notepadClient.getDeviceSize();
@@ -169,9 +216,12 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
           ),
           RaisedButton(
             child: Text('setDeviceName'),
-            onPressed: () async => {
-              await _notepadClient.setDeviceName('abc'),
-              _toast('New DeviceName: ${await _notepadClient.getDeviceName()}'),
+            onPressed: () {
+              setInputText('请输入新名字', (value) async {
+                await _notepadClient.setDeviceName(value);
+                _toast(
+                    'New DeviceName: ${await _notepadClient.getDeviceName()}');
+              });
             },
           ),
         ],
@@ -196,15 +246,23 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
             child: Text('getDeviceDate'),
             onPressed: () async {
               var date = await _notepadClient.getDeviceDate();
-              _toast('date = ${date} 即北京时间：${DateTime.fromMillisecondsSinceEpoch(date.toInt() * 1000)}');
+              _toast(
+                  'date = ${date} 即北京时间：${DateTime.fromMillisecondsSinceEpoch(date.toInt() * 1000)}');
             },
           ),
           RaisedButton(
             child: Text('setDeviceDate'),
             onPressed: () async {
-              var newDate = DateTime.now().millisecondsSinceEpoch / 1000;
-              await _notepadClient.setDeviceDate(newDate.toInt()); // second
-              _toast('newDate = $newDate，即北京时间：${DateTime.fromMillisecondsSinceEpoch(newDate.toInt() * 1000)}');
+              setInputText('请输入新的时间（自1970年起，单位s）', (value) async {
+                int date = int.parse(value);
+                if (date == null) {
+                  _toast('请输入有效数字');
+                  return;
+                }
+                await _notepadClient.setDeviceDate(date); // second
+                _toast(
+                    'newDate = $date，即北京时间：${DateTime.fromMillisecondsSinceEpoch(date * 1000)}');
+              });
             },
           ),
         ],
@@ -225,12 +283,15 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
           RaisedButton(
             child: Text('setAutoLockTime'),
             onPressed: () async {
-              try {
-                await _notepadClient.setAutoLockTime(11);
-                _toast('new AutoLockTime = 11分钟');
-              } catch (e) {
-                Toast.fail(context, title: e.toString());
-              }
+              setInputText('请输入新的休眠时间（单位分钟）', (value) async {
+                int date = int.parse(value);
+                if (date == null) {
+                  _toast('请输入有效数字');
+                  return;
+                }
+                await _notepadClient.setAutoLockTime(date);
+                _toast('new AutoLockTime = $date分钟');
+              });
             },
           ),
         ],
@@ -358,6 +419,20 @@ class _NotepadDetailPageState extends State<NotepadDetailPage>
           },
         ),
       ],
+    );
+  }
+
+  setInputText(String title, StringCallback confirm) {
+    _textEditingController.text = "";
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WDMAlertDialog(
+        type: Operation.EDIT,
+        textEditingController: _textEditingController,
+        title: title,
+        confirm: confirm,
+      ),
     );
   }
 }
